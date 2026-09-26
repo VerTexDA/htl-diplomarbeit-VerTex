@@ -39,6 +39,7 @@ build/
 .vscode/
 .idea/
 *.sublime-workspace
+*-SAVE-ERROR
 
 # =====================================================================
 # Operating system
