@@ -7,35 +7,78 @@
 
 \vorspannabschnitt{Ausgangslage}
 
-Beschreibt hier in wenigen Sätzen, welches Problem im Ausgangszustand besteht,
-wen es betrifft und warum eine technische Lösung sinnvoll ist.
+Automatisierte Spielanalyse (Laufdistanzen, Positionsdaten, Ereigniserkennung) ist im Profifußball Standard, 
+für Amateur- und Jugendvereine aber kaum zugänglich: bestehende 
+Systeme sind teuer, an Spezialhardware gebunden und geschlossen. 
+Vereine filmen zwar oft mit einfachen Kameras, können die 
+Aufnahmen aber nicht automatisiert auswerten.
 
 \vorspannabschnitt{Untersuchungsanliegen der individuellen Themenstellungen}
 
-\vorspannunterpunkt{1) Teilbereich A}
-Was untersucht dieses Teilprojekt? Formuliert die Fragestellung, nicht die
-Lösung.
+\vorspannunterpunkt{1) Teilbereich A Akpinar }
+Welche Messabweichungen und Genauigkeitsgrenzen entstehen bei der 
+2D-Homographie ohne echte 3D-Tiefsensoren
 
-\vorspannunterpunkt{2) Teilbereich B}
-\dots
+\vorspannunterpunkt{2) Teilbereich B Ishak}
+Wie verändert sich die Detektionsgenauigkeit bei Spielerverdeckung
+durch spezifisches Fine-Tuning im vergleich zu Standard-Basismodellen?
 
-\vorspannunterpunkt{3) Teilbereich C}
-\dots
-
+\vorspannunterpunkt{3) Teilbereich C Rahal}
+Wie muss eine Systemarchitektur ausgelegt sein, 
+um hochfrequente Tracking-Rohdaten mit minimaler Latenz 
+abzufragen und für Laien intuitiv darzustellen?
 \vorspannabschnitt{Zielsetzung}
 
-Ein bis zwei Sätze: Was soll am Ende der Arbeit vorliegen?
+Am Ende der Arbeit liegt ein funktionsfähiger Software-Prototyp 
+vor, der Fußballspiele über ein Zwei-Kamera-Panoramasystem 
+erfasst, Spieler mittels Computer Vision trackt und deren 
+Bewegungsdaten als reale 2D-Spielfeldkoordinaten in einem 
+interaktiven Web-Dashboard visualisiert.
 
 \vorspannabschnitt{Geplantes Ergebnis der individuellen Themenstellungen}
 
-\vorspannunterpunkt{1) Teilbereich A}
-Welches konkrete, überprüfbare Ergebnis liefert dieses Teilprojekt ab?
+\vorspannunterpunkt{1) Teilbereich A Akpinar}
+Artefakt:
 
-\vorspannunterpunkt{2) Teilbereich B}
-\dots
+Eine Software-Pipeline, die das Video-Stitching beider Kameras 
+durchführt, Tracking-IDs vergibt und die Pixelkoordinaten über 
+eine kalibrierte Homographie-Matrix in ein reales Koordinatensystem
+(in Metern) umrechnet.
 
-\vorspannunterpunkt{3) Teilbereich C}
-\dots
+Messbarkeit:
+
+Toleranz- und Fehleranalyse: Abweichung der berechneten Distanzen
+gegenüber real vermessenen Referenzstrecken auf dem Platz 
+(z. B. prozentualer Messfehler bei 16-Meter-Raum, Mittellinie) 
+sowie Stabilität des Trackings (Anzahl der ID-Switches).
+
+\vorspannunterpunkt{2) Teilbereich B Ishak}
+Artefakt:
+
+Ein exportiertes, lauffähiges Modell 
+(.pt / .yaml), die zugehörige Trainings- und Inferenz-Pipeline 
+sowie der vorbereitete, annotierte Validierungsdatensatz. 
+
+Messbarkeit: 
+
+Quantitative Evaluierungsmetriken: $mAP_{50}$, $mAP_{50-95}$, 
+Precision, Recall und Inferenzzeit (FPS / Latenz in ms) bei 
+Szenarien mit Verdeckung im Vergleich zum ungetunten Basismodell.
+
+\vorspannunterpunkt{3) Teilbereich C Rahal}
+Artefakt:
+
+Ein lauffähiges Softwaresystem bestehend aus 
+relationalem/zeitreihenbasiertem Datenbankschema, REST- bzw. 
+WebSocket-API zur Datenabfrage und einem interaktiven Web-Frontend.
+Wie wird es überprüft 
+
+Messbarkeit:
+
+Funktionale Abnahmekriterien: End-to-End-Test 
+Import von Trackingdaten $\rightarrow$ korrekte 
+visuelle Ausgabe auf dem 2D-Taktikfeld, Rendern von Heatmaps) 
+und Performance-Benchmarks (z. B. API-Antwortzeiten unter Last).
 
 \vorspannabschnitt{Meilensteine}
 
