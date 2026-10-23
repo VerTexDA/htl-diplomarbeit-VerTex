@@ -16,4 +16,71 @@ unterschiedlichen Personen parallel entwickelt werden.
 
 
 \subsection{Kommunikation zwischen Frontend und Backend}
+Um eine erfolgreiche Kommunikation zwischen Frontend und Backend zu ermöglichen, 
+benötigt man eine definierte Schnittstelle. Eine AppApplication
+Programming Interface (API) ist eine Schnittstelle, die es ermöglicht über einem Programm
+die Funktionen eines anderen Programms zu nutzen.
+APIs fungieren als Brücke zwischen verschiedenen Systemen. 
+Sie ermöglichen es, dass Anwendungen miteinander interagieren, indem sie Anfragen senden und Antworten empfangen.
+ Im vorliegenden Projekt wird sie über
+das Hypertext Transfer Protocol (HTTP) bereitgestellt, die übertragenen Daten
+liegen im Format JavaScript Object Notation (JSON) vor, und der Aufbau folgt
+dem Architekturstil Representational State Transfer (REST). Die folgenden
+Abschnitte erklären diese drei Bausteine sowie einen damit verbundenen
+Sicherheitsmechanismus der Browser.
 
+\subsection{HTTP}
+HTTP (Hypertext Transfer Protocol) ist das Kommunikationsprotokoll des World Wide Web, 
+das regelt, wie Browser und Webserver Seiten, Bilder und andere Inhalte austauschen.
+Jede Kommunikation
+besteht aus einer Anfrage und einer Antwort. Die Anfrage enthält eine Methode,
+die angibt, was der Client möchte, sowie die Adresse der angesprochenen
+Ressource, den Uniform Resource Locator (URL). Für VerTex sind zwei Methoden relevant. 
+GET fragt Daten an, ohne diese zu verändern. POST übermittelt Daten an dem Server, 
+damit sie dort verarbeitet oder gespeichert werden. Die Antwort besteht aus einem dreistelligen Statuscode,
+ der das Ergebnis zurückgibt. Zum Beispiel ist 200 eine erfolgreiche Anfrage
+ oder 404, wenn eine erforderte Resource nicht existiert. 
+
+\subsection{JSON}
+JavaScript Object Notation (JSON) ist ein Datenformat in einer einfachen lesbaren
+Textfrom. JSON wird für den Datenaustausch zwischen Anwendungen verwendet.Ein JSON-Dokument muss einer festen Syntax folgen: 
+Es beginnt stets mit einer öffnenden ge­schweif­ten Klammer und endet immer mit einer schlie­ßen­den ge­schweif­ten Klammer.
+Innerhalb der ge­schweif­ten Klammern werden einzelne Da­ten­fel­der durch Name-Wert-Paare definiert. Diese beginnen mit dem Namen,
+auf den ein Dop­pel­punkt und der Wert folgen. 
+Es kennt Objekte, die aus Schlüssel-Wert-Paaren bestehen,
+Arrays als geordnete Listen sowie die einfachen Werte Zeichenkette, Zahl und
+Wahrheitswert.
+Da das Format unabhängig von
+einer Programmiersprache ist und sowohl Python als auch JavaScript es mit
+Bordmitteln lesen und schreiben können, eignet es sich als gemeinsames Format
+zwischen Backend und Frontend. 
+
+\subsection{REST}
+REST (Representational State Transfer) ist ein Architekturstil für die Entwicklung von Webdiensten und Systemen,
+die einfach miteinander kommunizieren können.Er legt Rahmenbedingungen fest, die eine Schnittstelle
+einfach, skalierbar und leicht verständlich halten sollen. Die wichtigsten
+sind die Trennung von Client und Server, eine einheitliche Schnittstelle, 
+die Zustandslosigkeit zwischen Client und Server und letztens 
+die Möglichkeit, Antworten zwischenzuspeichern. 
+
+Die Standardoperation von HTTP ist GET, 
+die verwendet wird, wenn eine Ressource oder ein Ressourcensatz vom Server durch Angabe der Ressourcen-ID abgerufen wird.
+Neben GET definiert HTTP auch mehrere andere Anforderungsmethoden,
+darunter PUT (Aktualisierung einer Ressource nach ID), POST (Erstellen einer neuen Ressource) 
+und DELETE (Entfernen einer Ressource nach ID).
+
+\subsection{Relationale Datenbanken und SQL}
+Relationale Datenbanksoftware nutzt das zentrale Konzept der Normalisierung und die Einschränkungen von Primär- und Fremdschlüsseln, 
+um Beziehungen zwischen Datenzeilen in verschiedenen Datenbanktabellen herzustellen. 
+Primärschlüssel sind eindeutige Identifikatoren für die Zeilen einer Tabelle. 
+Fremdschlüssel verweisen auf Primärschlüssel in anderen Tabellen.
+Primär- und Fremdschlüssel sind in RDMBS zentrale Konzepte zur Optimierung der Datenbanken. 
+Mit der Möglichkeit, zusammengehörige Datenwerte über Schlüssel zu verknüpfen, 
+entfällt die Notwendigkeit, Daten in mehreren Tabellen zu speichern. 
+Dies reduziert die Datenredundanz, was wiederum den Speicherbedarf senkt, 
+die Datenbankwartung optimiert und eine schnellere Abfrage in RDBMS-Umgebungen erlaubt.
+
+Abgefragt und verändert werden die Daten mit der Structured Query Language
+(SQL). Mit dem SELECT-Statement werden Daten gelesen, mit INSERT neue 
+Datensätze hinzugefügt und mit JOIN lassen sich Tabellen durch ihre Schlüssel
+verknüpfen. 
