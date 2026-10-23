@@ -70,7 +70,8 @@ darunter PUT (Aktualisierung einer Ressource nach ID), POST (Erstellen einer neu
 und DELETE (Entfernen einer Ressource nach ID).
 
 \subsection{Relationale Datenbanken und SQL}
-Relationale Datenbanksoftware nutzt das zentrale Konzept der Normalisierung und die Einschränkungen von Primär- und Fremdschlüsseln, 
+Relationale Datenbanksoftware nutzt das zentrale Konzept der Normalisierung 
+und die Einschränkungen von Primär- und Fremdschlüsseln, 
 um Beziehungen zwischen Datenzeilen in verschiedenen Datenbanktabellen herzustellen. 
 Primärschlüssel sind eindeutige Identifikatoren für die Zeilen einer Tabelle. 
 Fremdschlüssel verweisen auf Primärschlüssel in anderen Tabellen.
@@ -83,4 +84,35 @@ die Datenbankwartung optimiert und eine schnellere Abfrage in RDBMS-Umgebungen e
 Abgefragt und verändert werden die Daten mit der Structured Query Language
 (SQL). Mit dem SELECT-Statement werden Daten gelesen, mit INSERT neue 
 Datensätze hinzugefügt und mit JOIN lassen sich Tabellen durch ihre Schlüssel
-verknüpfen. 
+verknüpfen. Um bereits hinzugefügte Datensätze zu bearbeiten, verwendet man UPDATE. 
+
+\subsection{Entity-Relationship-Modell}
+Zum Entwurf einer Datenbank wird häufig das Entity-Relationship-Modell
+(ER-Modell) herangezogen. Es beschreibt die Daten über
+Entitäten, Attribute und über die Beziehung zwischen den Entitäten. 
+Ein Entität ist ein Exemplar einer Person, Ware, 
+nicht-materiellen Gutes über welche Information gespeichert wird. 
+Jeder Beziehung wird eine Kardinalität zugeordnet, die beschreibt, wie viele 
+Datensätze mit einander verknüpft sind. Dabei gibt es 3 Arten der Beziehungen: 
+
+1:1-Beziehung: Eine Entität eines Typs hat eine Beziehung zu genau eine Entität eines anderen Typen. 
+
+1:n-Beziehung: Eine Entität hat Beziehungen zu mehreren Entitäten eines anderen Typs. 
+In der anderen Richtung entsteht eine Einfachsbeziehung.
+
+n:m-Beziehung: Beide Entitäten unbestimmt viele verbundene Beziehungen zu anderen Entitäten haben. 
+
+Eine n:m-Beziehung lässt sich in einer relationalen Datenbank nicht
+direkt abbilden und wird deshalb über eine zusätzliche Verknüpfungstabelle
+aufgelöst, die die Fremdschlüssel beider Seiten enthält.
+
+\subsection{MariaDB}
+MariaDB ist ein quelloffenes relationales DBMS, das als Abspaltung von MySQL
+entstanden ist und dessen Funktionsumfang und Schnittstellen weitgehend
+übernimmt mariadb. Als Standard-Speicher-Engine dient InnoDB, die
+Transaktionen und Fremdschlüssel unterstützt mariadb. Das DBMS läuft als
+eigener Serverprozess, mit dem sich Anwendungen über das Netzwerk verbinden und
+mit Benutzername und Passwort anmelden. Zur Verwaltung der Datenbank und zum
+Testen von Abfragen wird das grafische Werkzeug DBeaver verwendet.
+
+
