@@ -40,6 +40,13 @@ Diese fungieren als Klassifikator: Sie wichten die extrahierten,
 hochkomplexen Merkmale und berechnen am Ende Wahrscheinlichkeiten für die 
 gesuchten Klassen (beispielsweise „Fußballspieler“, „Schiedsrichter“ oder „Ball“).
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/working_of_cnn_ishak.png}
+    \caption{Schematischer Aufbau eines Convolutional Neural Networks zur Bildklassifikation \cite{gfg-cnn}.}
+    \label{abb:cnn-architektur}
+\end{figure}
+
 \subsection{You Only Look Once (YOLO)}
 
 Für die Objekterkennung in Echtzeit hat sich in den letzten Jahren die 
@@ -108,3 +115,10 @@ isolierte Teilmerkmale (wie nur die Stutzen, die Schulter oder den Kopf)
 zu achten. In Kombination mit angepassten IoU-Schwellenwerten oder 
 toleranteren Algorithmen wie Soft-NMS lässt sich die Detektionsrate 
 (Recall) bei starker Verdeckung signifikant steigern.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.75\linewidth]{images/roboflow_bounding_box_ishak.png}
+    \caption{Beispiel einer starken Verdeckung (Occlusion) im Fußball. Der hintere Spieler wird trotz massiver Überlappung separat detektiert.}
+    \label{abb:occlusion-beispiel}
+\end{figure}
