@@ -1,7 +1,19 @@
 \section{Jobans Abschnitt}
 \abschnittsautor{J. Rahal}
 
-\subsection{Jobanteil}
-Ist jetzt nur zum Test da. Damit jeder dann später halt eine eigene Datei zum schreiben hat und
-es nicht zu merge Konflikten kommen kann.
+
+\subsection{Systemarchitektur}
+Webbasierte Systeme beruhen auf dem Client-Server Modell. Ein Client (Webrowser)
+stellt Anfragen, ein Server nimmt diese entgegen, verarbeitet sie und sendet eine Antowrt zurück. 
+Die Aufgaben werden hier auf drei Schichten verteilt. Die Präsentationsschicht
+ist zuständig für die Darstellung und die Interaktion mit dem Benutzer. Die Logikschicht verarbeitet die Daten
+und die Datenhaltungsschicht speichert sie dauerhaft. 
+
+Der Vorteil daran ist, dass jede Schicht unabhängig voneinander weiterentwickelt oder gewechselt werden kann,
+solange die Schnittstellen unverändert bleiben. Für VerTex ist das
+wesentlich, weil Bildverarbeitung, Backend und Weboberfläche von
+unterschiedlichen Personen parallel entwickelt werden.
+
+
+\subsection{Kommunikation zwischen Frontend und Backend}
 

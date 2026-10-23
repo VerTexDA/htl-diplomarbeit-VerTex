@@ -14,6 +14,27 @@ Der zweite Absatz beschreibt üblicherweise die technische Umsetzung auf
 
 Der letzte Absatz fasst das Ergebnis zusammen und benennt den erzielten
 Mehrwert.
+
+Die Spielanalyse im Fussball (Laufdistanzen, Positionsdaten und taktischen
+Auswertungen) kostet oft Geld und viel Hardware. Kleine Vereine können sich diese Funktion oft nicht leisten. Das Diplomprojekt
+VerTex setzt hier an. Es ist ein System das aus Videoaufnahmen des Spielfelds Bewegungs- und Spielstatistiken
+gewinnt und diese Trainerinnen und Trainern ohne technisches Vorwissen
+zugänglich macht.
+
+Das Spielfeld wird mit einem synchronisierten Zwei-Kamera-Setup erfasst und zu
+einem Panorama zusammengefügt. Ein Computer-Vision-Modell erkennt Spieler und Ball und verfolgt sie über die ganze Spiellänge. 
+Mittels einer Homogprahie werden die Bildkoordinaten in Spielfeldkoordinaten umgerechnet. 
+Die Bewegungsdaten werden über eine API in einer Datenbank gespeichert. 
+Aus den Daten werden Laufwege, Distanzen und Teamstatistiken berechnet. 
+Eine Web-Applikation greift über die API auf die Daten zu und stellt sie interaktiv dar.
+
+Als Ergebnis soll eine interaktive Web-Applikation zur Verfügung gestellt werden,
+die die Auswertung von Heatmaps und Teamstatistiken visuell darstellt. 
+Weiters, soll ein fine-getuntes Computer-Vision-Modell für fußballspezifische Objekterkennung entwickelt werden. 
+
+
+
+
 }
 
 \abstracttext{%
@@ -25,6 +46,26 @@ The second paragraph outlines the technical realisation at an overview level:
 which components were built and how they interact.
 
 The final paragraph summarises the outcome and states the value it creates.
+
+Match analysis in football (running distances, position data and tactical
+evaluations) often requires a lot of money and hardware. Small clubs frequently
+cannot afford this functionality. The diploma project VerTex addresses this
+problem. It is a system that derives movement and match statistics from video
+recordings of the pitch and makes them accessible to coaches without any
+technical background.
+
+The pitch is captured with a synchronised two-camera setup, and the images are
+stitched into a panorama. A computer vision model detects players and the ball
+and tracks them over the entire duration of the match. Using a homography, the
+image coordinates are converted into pitch coordinates. The movement data is
+stored in a database via an API. Running paths, distances and team statistics
+are calculated from this data. A web application accesses the data through the
+API and presents it interactively.
+
+As a result, an interactive web application is to be provided that visualises
+the evaluation of heatmaps and team statistics. Furthermore, a fine-tuned
+computer vision model for football-specific object detection is to be
+developed.
 }
 
 \danksagung{%
