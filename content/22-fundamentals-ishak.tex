@@ -1,11 +1,110 @@
-\section{Computer Vision und Objekterkennung (TEST)}
+\section{Computer Vision und Objekterkennung }
 \abschnittsautor{M. Ishak}
 
+Die automatisierte Erfassung von Fußballspielern auf einem Spielfeld
+erfordert robuste Algorithmen aus dem Bereich der \textbf{Computer Vision}.
+In diesem Abschnitt werden die technologischen Grundlagen der 
+Bilderverarbeitung und der darauf aufbauenden Objekterkennung
+erläutert.
+
 \subsection{Architektur von Convolutional Neural Networks}
-Hier schreibst du deinen Text.
-Jeder Satz steht auf einer eigenen Zeile.
-Ist jetzt nur zum Test da. Damit jeder dann später halt eine eigene Datei zum schreiben hat und
-es nicht zu merge Konflikten kommen kann.
+
+Ein \ac{CNN} (Convolutional Neural Network) ist eine spezielle Form 
+von künstlichen neuronalen Netzen, die primär für die Verarbeitung von 
+Bild- und Audiodaten eingesetzt wird. Im Gegensatz zu klassischen
+\textit{Fully Connected Networks} bewahren \ac{CNN} die räumliche Struktur
+von Bilddaten und arbeiten mit einer deutlichen reduzierten Anzahl an Parametern,
+was sie recheneffizienter und robuster macht ~\cite{goodfellow2016deep}
+
+Das Kernkonzept eines \ac{CNN} ist die Faltungsschicht (Convolutional Layer).
+Hierbei gleiten kleine Matrizen, sogennante Filter oder Kernel, schrittweise
+über das Eingabebild und berechnen das Skalarprodukt zwischen den Filtergewichten
+und den Bildpixeln. In den früheren Schichten des Netzwerkes lernen diese Filter
+einfache visuelle Kanten, Ecken oder Farbkontraste. In tieferen Schichten 
+setzen sich diese einfachen Merkmale zu komplexeren Mustern wie spezifischen
+Texturen oder Objektteilen zusammen ~\cite{goodfellow2016deep}. Das 
+Ergebnis dieser Faltungsoperationen sind sogennante \textit{Feature Maps} 
+(Merkmalskarten).
+
+Um die räumliche Auflösung der Feature Maps zu reduzierten und gleichzeitig
+die wichtigsten Merkmale zu erhalten, kommen Pooling-Schichten (z.\,B. Max-Pooling) 
+zum Einsatz. Diese fassen benachbarte Pixel zusammen und leiten nur den 
+dominantesten Wert weiter. Dies senkt nicht nur den Rechenaufwand signifikant,
+sondern sorgt auch für eine Translationsinvarianz -- das Netzwerk erkennt ein 
+gelerntes Muster unabhängig von dessen exakter Position im Bild. 
+
+Nach mehreren Convolutional- und Pooling-Schichten wird die resultierende 
+mehrdimensionale Matrix abgeflacht (Flattening) und an eine oder mehrere 
+\textit{Fully Connected Layers} (vollständig verbundene Schichten) übergeben.
+Diese fungieren als Klassifikator: Sie wichten die extrahierten, 
+hochkomplexen Merkmale und berechnen am Ende Wahrscheinlichkeiten für die 
+gesuchten Klassen (beispielsweise „Fußballspieler“, „Schiedsrichter“ oder „Ball“).
 
 \subsection{You Only Look Once (YOLO)}
-Hier folgt der nächste theoretische Block.
+
+Für die Objekterkennung in Echtzeit hat sich in den letzten Jahren die 
+Modellarchitektur \ac{YOLO} (You Only Look Once) als De-facto-Standard 
+etabliert. Im Gegensatz zu zweistufigen Detektoren (wie etwa Faster R-CNN),
+die zuerst potenziell relevante Bildregionen vorschlagen und diese 
+anschließend klassifizieren, formuliert YOLO die Objekterkennung als 
+ein einziges Regressionsproblem~\cite{redmon2016you}. Das gesamte Bild 
+wird in einem einzigen Vorwärtsdurchlauf (Single-Pass) analysiert, um 
+Bounding Boxes und Klassenzugehörigkeiten simultan vorherzusagen. Dies 
+führt zu einer massiven Steigerung der Inferenzgeschwindigkeit.
+
+Moderne YOLO-Architekturen, wie das von Ultralytics entwickelte YOLOv8, 
+bestehen grundlegend aus drei Hauptkomponenten: dem \textit{Backbone}, 
+dem \textit{Neck} und dem \textit{Head}~\cite{ultralytics2023yolov8}. 
+Das Backbone (oft basierend auf einem modifizierten CSPDarknet) dient als
+effizienter Feature-Extraktor. Der Neck (meist ein Feature Pyramid Network 
+oder Path Aggregation Network) führt Merkmale aus verschiedenen 
+Netzwerktiefen zusammen. Dies ist essenziell, um Objekte in stark 
+unterschiedlichen Skalierungen zu erkennen -- ein entscheidender Faktor 
+im Fußball, wo Spieler in Kameranähe riesig und auf der gegenüberliegenden
+Spielfeldseite sehr klein abgebildet werden. Der Head schlussendlich ist 
+entkoppelt (\textit{Decoupled Head}) und gibt separat die 
+Wahrscheinlichkeiten für die Objektklassen sowie die genauen Koordinaten 
+der Bounding Boxes aus.
+
+Für die automatisierte Videoanalyse im Fußball ist YOLO prädestiniert, 
+da die hohe Inferenzgeschwindigkeit ein durchgehendes 
+Frame-by-Frame-Tracking in Echtzeit ermöglicht. Durch die Verarbeitung 
+von hochauflösenden Eingabebildern (z.\,B. 1280 Pixel) lassen sich auch 
+auf weite Distanzen zuverlässige Detektionen erzielen.
+
+\subsection{Herausforderungen bei Verdeckung (Occlusion)}
+
+Eine der größten Herausforderungen bei der optischen Verfolgung von 
+Spielern im Fußball ist die sogenannte Verdeckung (Occlusion). 
+Bei Zweikämpfen oder Standardsituationen, wie etwa einem Eckball, 
+stehen Spieler dicht gedrängt und verdecken sich gegenseitig teilweise 
+oder vollständig. Standard-Objekterkennungsmodelle stoßen hierbei 
+systembedingt an ihre Grenzen.
+
+Das Hauptproblem liegt im Post-Processing-Algorithmus der Modelle, 
+der \ac{NMS} (Non-Maximum Suppression). YOLO generiert für dasselbe 
+Objekt oft mehrere leicht verschobene Bounding Boxes. Um diese zu 
+bereinigen, berechnet \ac{NMS} den \textit{Intersection over Union} 
+(IoU) Wert -- das Verhältnis der Schnittfläche zur Vereinigungsfläche 
+zweier Boxen. Überschreitet dieser Wert einen definierten Schwellenwert 
+(z.\,B. 0.45), geht der Algorithmus davon aus, dass beide Boxen dasselbe 
+Objekt markieren, und löscht die Box mit der geringeren \textit{Confidence}
+(Konfidenz)~\cite{bodla2017soft}. Stehen jedoch zwei Fußballspieler im 
+Zweikampf dicht hintereinander, überschneiden sich ihre echten Bounding 
+Boxes extrem stark. Standard-\ac{NMS} bewertet den teilweise verdeckten 
+Spieler fälschlicherweise als redundante Detektion des vorderen Spielers 
+und unterdrückt ihn komplett.
+
+Um diese Problematik zu beheben, erfordert es spezialisierte Lösungsansätze.
+Einerseits muss durch gezieltes Fine-Tuning auf fußballspezifische 
+Datensätze trainiert werden, die eine hohe Dichte an Spielerverdeckungen 
+(Ground Truth) aufweisen. Andererseits kommen spezifische 
+Data-Augmentation-Methoden zum Einsatz, wie etwa \textit{Random Erasing} 
+(oder Cutout)~\cite{zhong2020random}. Hierbei werden während des 
+Trainingsprozesses zufällige rechteckige Bereiche eines Bildes geschwärzt 
+oder mit Rauschen gefüllt. Das neuronale Netz wird so gezwungen, Spieler 
+nicht nur anhand ihrer Gesamtsilhouette zu erkennen, sondern auch auf 
+isolierte Teilmerkmale (wie nur die Stutzen, die Schulter oder den Kopf) 
+zu achten. In Kombination mit angepassten IoU-Schwellenwerten oder 
+toleranteren Algorithmen wie Soft-NMS lässt sich die Detektionsrate 
+(Recall) bei starker Verdeckung signifikant steigern.
