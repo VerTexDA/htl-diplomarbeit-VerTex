@@ -33,10 +33,20 @@ Stelle bleiben.
 
 \subsection{Spielertracking über aufeinanderfolgende Bilder}
 
-Die Objekterkennung bestimmt zunächst für jedes einzelne Bild, wo sich
-Spieler befinden. Ihre Positionen können dabei durch rechteckige Rahmen
-gekennzeichnet werden. Das Tracking übernimmt den nächsten Schritt: Es
-ordnet die Erkennungen aus aufeinanderfolgenden Bildern demselben Spieler
-zu und vergibt dafür eine Kennnummer. So entsteht aus einzelnen Positionen
-ein zusammenhängender Laufweg. Dieses Vorgehen wird als
+ie Objekterkennung bestimmt für jedes einzelne Bild, wo sich Spieler
+befinden. Beim Tracking werden diese einzelnen Erkennungen über mehrere
+Bilder hinweg miteinander verbunden. Das Ziel ist, denselben Spieler im
+weiteren Verlauf wiederzuerkennen und seine Bewegung zu verfolgen.
+Dazu erhält jede verfolgte Spur eine Kennnummer. Die Folge der zugeordneten
+Positionen beschreibt die Bewegung des Spielers im Video. Die Verbindung
+von Objekterkennung und anschließender zeitlicher Zuordnung wird als
 \emph{Tracking-by-Detection} bezeichnet~\cite{akpinar-bewley-sort}.
+
+Die zentrale Aufgabe des Trackings ist die Zuordnung zwischen bestehenden
+Spuren und neu erkannten Spielern. Dabei geben die bisherige Position und
+Bewegung Hinweise darauf, welche Erkennungen zusammengehören. Eine
+Bewegungsvorhersage beschreibt, wo ein Spieler im nächsten Bild erwartet
+wird. Der Vergleich dieser Vorhersage mit den neuen Erkennungen bildet
+eine Grundlage für die weitere Zuordnung. Fehler in der Objekterkennung
+wirken sich deshalb auch auf das Tracking aus: Wird ein Spieler übersehen
+oder seine Position ungenau bestimmt, wird die Fortsetzung seiner Spurschwieriger~\cite{akpinar-bewley-sort}.
