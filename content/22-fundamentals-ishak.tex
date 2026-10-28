@@ -2,7 +2,7 @@
 \abschnittsautor{M. Ishak}
 
 Die automatisierte Erfassung von Fußballspielern auf einem Spielfeld
-erfordert robuste Algorithmen aus dem Bereich der \textbf{Computer Vision}.
+erfordert robuste Algorithmen aus dem Bereich der \ac{CV}.
 In diesem Abschnitt werden die technologischen Grundlagen der 
 Bilderverarbeitung und der darauf aufbauenden Objekterkennung
 erläutert.
@@ -122,3 +122,42 @@ toleranteren Algorithmen wie Soft-NMS lässt sich die Detektionsrate
     \caption{Beispiel einer starken Verdeckung (Occlusion) im Fußball. Der hintere Spieler wird trotz massiver Überlappung separat detektiert.}
     \label{abb:occlusion-beispiel}
 \end{figure}
+
+\subsection{Transfer Learning und Fine-Tuning}
+Das Training eines tiefen neuronalen Netzes von Grund auf (Training from Scratch) erfordert hunderttausende 
+annotierte Bilder sowie massive Rechenkapazitäten, um grundlegende Merkmale wie Kanten und einfache 
+geometrische Formen zu erlernen. Um diese Ressourcenhürde zu umgehen, wird in der modernen Bildverarbeitung 
+das Prinzip des \textit{Transfer Learning} (Wissenstransfer) angewandt~\cite{pan2009survey}.
+
+Dabei wird ein Basismodell verwendet, das bereits auf einem enormen, generischen Datensatz -- wie dem 
+\ac{COCO}-Datensatz (Common Objects in Context) mit über 330.000 Bildern und 80 Objektklassen -- vortrainiert 
+wurde. Die unteren Schichten (Backbone) dieses Modells haben bereits die Fähigkeit zur generellen 
+Merkmalsextraktion perfektioniert. Beim sogenannten \textit{Fine-Tuning} werden lediglich die Gewichte der 
+obersten Schichten (des Heads) auf einen neuen, spezifischen Zieldatensatz -- in diesem Fall fußballspezifische 
+Aufnahmen -- nachtrainiert und angepasst. Dies ermöglicht es, das Modell mit einer verhältnismäßig kleinen Menge
+an domänenspezifischen Trainingsdaten (wenige tausend Bilder) hocheffizient auf die Zielklassen 
+(Spieler, Ball, Schiedsrichter) zu spezialisieren, während irrelevante Klassen des Ursprungsmodells 
+verworfen werden.
+
+\subsection{Evaluierungsmetriken der Objekterkennung}
+Um die Leistungsfähigkeit und Genauigkeit eines Objekterkennungsmodells objektiv beurteilen zu können, 
+werden standardisierte Metriken herangezogen~\cite{padilla2020survey}. Grundlage hierfür ist der bereits 
+erwähnte \ac{IoU}-Wert (Intersection over Union). Ein Detektionsergebnis gilt als \textit{True Positive} (TP), 
+wenn der \ac{IoU} zwischen der vorhergesagten Bounding Box und der tatsächlichen Ground-Truth-Box einen 
+definierten Schwellenwert (meist 0.50) überschreitet. Liegt der Wert darunter oder wird ein Hintergrundobjekt 
+fälschlicherweise markiert, resultiert ein \textit{False Positive} (FP). Wird ein reales Objekt vom Modell 
+komplett übersehen, spricht man von einem \textit{False Negative} (FN).
+
+Aus diesen Klassifikationen leiten sich die zwei fundamentalen Metriken ab:
+\begin{itemize}
+    \item \textbf{Precision (Genauigkeit):} Berechnet sich aus $\frac{TP}{TP + FP}$. Sie gibt an, wie viel 
+    Prozent der vom Modell gesetzten Bounding Boxes tatsächlich korrekte Objekte einkreisen. Eine 
+    hohe Precision bedeutet wenige Fehlalarme (z.\,B. wenn Werbebanden fälschlicherweise als Spieler 
+    erkannt werden).
+    \item \textbf{Recall (Trefferquote):} Berechnet sich aus $\frac{TP}{TP + FN}$. Sie gibt an, wie viel 
+    Prozent der tatsächlich auf dem Bild vorhandenen Objekte vom Modell gefunden wurden. Im Kontext der 
+    Spielerverdeckung (Occlusion) ist der Recall die kritischste Metrik, da er aufzeigt, wie viele verdeckte 
+    Spieler fälschlicherweise übersehen wurden.
+\end{itemize}
+
+Um das Modell über verschiedene Konfidenz-Schwellenwerte hinweg bewerten zu können, wird die Fläche unter der Precision-Recall-Kurve berechnet, die sogenannte \textit{Average Precision} (AP). Der Mittelwert der AP über alle trainierten Klassen hinweg ergibt die \textit{mean Average Precision} (mAP). In aktuellen Evaluierungen wird häufig die Metrik \textbf{mAP@50-95} herangezogen. Hierbei wird die mAP über zehn verschiedene \ac{IoU}-Schwellenwerte (von 0.50 bis 0.95 in 0.05-Schritten) gemittelt~\cite{padilla2020survey}. Ein hoher mAP@50-95-Wert garantiert nicht nur, dass das Objekt überhaupt gefunden wurde, sondern dass die Kanten der Bounding Box millimetergenau am Objekt anliegen -- eine essenzielle Voraussetzung für die anschließende geometrische Homografie-Transformation in 2D-Spielfeldkoordinaten.
