@@ -3,7 +3,6 @@
 \abschnittsautor{E. Akpinar}
 \label{sec:umsetzung-akpinar}
 
-\begin{zitatfreistehend}
 \enquote{Ziel dieses Teilbereichs ist eine Verarbeitungspipeline, die erkannte
 Fußballspieler über aufeinanderfolgende Videobilder verfolgt und ihre
 Bildpositionen in reale, zweidimensionale Spielfeldkoordinaten überführt.
@@ -12,9 +11,7 @@ zurückgelegte Distanzen berechnet werden. Als Eingabe ist ein Panoramavideo
 aus den Aufnahmen zweier nebeneinander angeordneter Kameras vorgesehen.
 Die Projektbeschreibung legt dafür eine Abbildung auf die Spielfeldebene
 mittels Homographie fest.}~\cite{akpinar-codex-20261029b}
-\end{zitatfreistehend}
 
-\begin{zitatfreistehend}
 \enquote{Die Aufgaben sind innerhalb des Teams aufgeteilt: Die Entwicklung und
 Anpassung des Modells zur Spielererkennung liegt im Teilbereich von
 M. Ishak. Der hier beschriebene Teilbereich verarbeitet die erkannten
@@ -24,18 +21,14 @@ J. Rahal. Für die spätere Integration müssen Spielerkennungen,
 Zeitangaben und Feldpositionen in einem gemeinsam abgestimmten Datenformat
 übergeben werden. Ein konkretes Übergabeformat wird hier noch nicht als
 festgelegt vorausgesetzt.}~\cite{akpinar-codex-20261029b}
-\end{zitatfreistehend}
 
-\begin{zitatfreistehend}
 \enquote{Zur Aufgabenstellung gehört außerdem die Untersuchung der Messgenauigkeit
 und der Systemgrenzen. Die geplante Prüfung umfasst den Vergleich mit
 manuell annotierten Videodaten sowie mit bekannten Spielfeldabmessungen.
 Die tatsächlich durchgeführten Versuche und ihre Ergebnisse sind getrennt
 von diesen geplanten Zielen zu dokumentieren.}~\cite{akpinar-codex-20261029b}
-\end{zitatfreistehend}
 
-\paragraph{Vorhandener Tracking-Prototyp}
-\begin{zitatfreistehend}
+\subsection{Vorhandener Tracking-Prototyp}
 \enquote{Das Skript \lstinline|test_tracking.py| lädt eine lokale Modelldatei über
 Ultralytics und übergibt das ausgewählte Video an
 \lstinline|model.track|. Als Standarddateien sind
@@ -47,9 +40,7 @@ Prototyp BoT-SORT; die Beschreibung des allgemeinen Tracking-Prinzips in
 Abschnitt~\ref{sec:Grundlage-Akpinar} auf
 Seite~\pageref{sec:Grundlage-Akpinar} legt keinen anderen Tracker für
 die Implementierung fest.}~\cite{akpinar-codex-20261029b}
-\end{zitatfreistehend}
 
-\begin{zitatfreistehend}
 \enquote{Die Ergebnisse werden mit \lstinline|stream=True| nacheinander
 abgerufen. Das Skript zählt die verarbeiteten Bilder und speichert
 standardmäßig ein Ergebnisvideo. Die Speicherung lässt sich über
@@ -57,9 +48,7 @@ standardmäßig ein Ergebnisvideo. Die Speicherung lässt sich über
 ist im Aufruf derzeit nicht gesetzt. Die Ausgabe darf daher nicht
 uneingeschränkt mit ausschließlich erkannten Fußballspielern
 gleichgesetzt werden.}~\cite{akpinar-codex-20261029b}
-\end{zitatfreistehend}
 
-\begin{zitatfreistehend}
 \enquote{Die Verbindung zwischen Tracking und metrischer Auswertung ist in diesem
 Skript noch nicht umgesetzt: Es exportiert keine Folge von Feldpositionen
 pro Spieler und berechnet keine aufsummierten Laufdistanzen.
@@ -67,10 +56,8 @@ Die vorhandene Messfunktion in \lstinline|4_messen.py| bestimmt dagegen
 den Abstand zwischen zwei ausgewählten Bodenpunkten eines kalibrierten
 Einzelbilds. Diese Einzelmessung ist von der Auswertung einer zeitlichen
 Bewegungsspur zu unterscheiden.}~\cite{akpinar-codex-20261029b}
-\end{zitatfreistehend}
 
-\paragraph{Kalibrierung eines Einzelbilds}
-\begin{zitatfreistehend}
+\subsection{Kalibrierung eines Einzelbilds}
 \enquote{Die Kalibrierung wird derzeit getrennt vom Tracking anhand des Bilds
 \lstinline|kalibrierung_feld.png| durchgeführt. In
 \lstinline|punkte.json| werden vier sichtbaren Ecken von Strafraum und
@@ -78,9 +65,7 @@ Torraum jeweils Bildkoordinaten und angenommene Feldkoordinaten in Metern
 zugeordnet. Daraus berechnet \lstinline|3_homographie.py| die Matrix. Eine gespeicherte Prüfsumme bindet die Kalibrierung an
 die verwendete Bilddatei; sie ersetzt jedoch keine Kontrolle der
 Punktzuordnung.}~\cite{akpinar-codex-20261029c}
-\end{zitatfreistehend}
 
-\begin{zitatfreistehend}
 \enquote{Bei der Überprüfung waren drei Bildpunkte den falschen Feldmarkierungen
 zugeordnet. Nach dem visuellen Abgleich mit dem Bild wurden die bereits
 in \lstinline|referenz.json| hinterlegten Punktzuordnungen übernommen.
@@ -91,21 +76,16 @@ rund 0,66\,m, 0,74\,m und 0,46\,m aus. Für die gespeicherte
 Kontrollstrecke ergeben sich 14,97\,m gegenüber einem angenommenen
 Referenzwert von 14,62\,m. Die relative Abweichung beträgt rund
 2,35\,\%.}~\cite{akpinar-codex-20261029c}
-\end{zitatfreistehend}
 
-\begin{zitatfreistehend}
 \enquote{Diese Prüfung bezieht sich ausschließlich auf die ausgewählten Punkte
 im untersuchten Einzelbild. Die Bildpunkte wurden manuell bestimmt;
 die tatsächlichen Abstände auf dem aufgenommenen Spielfeld wurden nicht
 unabhängig vermessen. Das Ergebnis ist deshalb eine Plausibilitätsprüfung
 unter den gespeicherten Maßannahmen und kein Nachweis der Genauigkeit
 von Spielerpositionen oder aufsummierten Laufdistanzen im gesamten Video.}~\cite{akpinar-codex-20261029c}
-\end{zitatfreistehend}
 
-\begin{zitatfreistehend}
 \enquote{Das Zusammenfügen der beiden Kameraaufnahmen zu einem Panoramavideo
 ist im aktuellen Projektstand noch nicht implementiert. Die vorhandenen
 Skripte verarbeiten ein einzelnes Eingabevideo beziehungsweise ein
 Kalibrierungsbild. Auch die durchgängige Verbindung von Tracking,
 Koordinatentransformation und Laufdistanzberechnung steht noch aus.}~\cite{akpinar-codex-20261029c}
-\end{zitatfreistehend}
