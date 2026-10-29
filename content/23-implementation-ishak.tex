@@ -1,114 +1,189 @@
 \section{Implementierung der robusten Spielererkennung}
 \abschnittsautor{M. Ishak}
 
-Dieser Abschnitt dokumentiert die praktische Umsetzung der Computer-Vision-Pipeline. Der Fokus liegt 
-dabei auf der Erstellung eines verdeckungstoleranten Datensatzes, dem Fine-Tuning der YOLOv8-Modelle 
-sowie der Konstruktion einer geometrisch korrekten Schnittstelle für das anschließende Kamera-Tracking.
+Dieser Abschnitt dokumentiert die praktische Umsetzung der \ac{CV}-Pipeline. Der Fokus liegt dabei auf der 
+Erstellung eines verdeckungstoleranten Datensatzes, dem Fine-Tuning der YOLOv8-Modelle sowie der 
+Konstruktion einer geometrisch korrekten Schnittstelle für das anschließende Kamera-Tracking.
 
 \subsection{Datenbeschaffung und Annotation}
-Erste Evaluierungen mit dem vortrainierten Standard-Modell von YOLOv8 (ohne Fine-Tuning) zeigten 
-deutliche Schwächen im fußballspezifischen Kontext. Insbesondere bei Verdeckungen (Occlusion) 
-traten hohe Fehlerquoten auf, und Spieler wurden vom Basismodell teilweise fälschlicherweise als 
-irrelevante Objekte (beispielsweise als Fahrräder) klassifiziert. Um diese Defizite zu beheben, 
+
+Erste Evaluierungen mit dem vortrainierten Standard-Modell von YOLOv8 (ohne Fine-Tuning) zeigten deutliche 
+Schwächen im fußballspezifischen Kontext. Insbesondere bei Verdeckungen (Occlusion) traten hohe 
+Fehlerquoten auf, und Spieler wurden vom Basismodell teilweise fälschlicherweise als irrelevante Objekte 
+des \ac{COCO}-Datensatzes (beispielsweise als Fahrräder) klassifiziert. Um diese Defizite zu beheben, 
 wurde ein domänenspezifischer Datensatz konstruiert.
 
 Der finale Datensatz setzt sich aus zwei Quellen zusammen: Um eine hohe Grundvarianz an Spielsituationen, 
 Lichtverhältnissen und Trikotfarben zu gewährleisten, wurden rund 10.000 bereits öffentlich zugängliche 
-Bilder von der Plattform Roboflow integriert. Um das Modell jedoch gezielt auf die spezifische Perspektive 
-und Verdeckungssituationen des Projekts zu trainieren, wird dieser Stamm-Datensatz um 100 bis 500 eigens 
-erstellte Bilder erweitert. Diese Aufnahmen bestehen aus extrahierten Screenshots von YouTube-Videos, 
-Bildmaterial von Fußballvereinen sowie verschiedenen Online-Quellen. Zusätzlich sind eigene Videoaufnahmen 
-von Amateurspielen (aufgenommen mit einem iPhone 15 Pro) eingeplant, um die exakte Kameraposition des Projekts 
-zu simulieren.
+Bilder von der Plattform Roboflow~\cite{roboflow2024} integriert. Um das Modell jedoch gezielt auf die 
+spezifische Perspektive und Verdeckungssituationen des Projekts zu trainieren, wird dieser Stamm-Datensatz 
+um 100 bis 500 eigens erstellte Bilder erweitert. Diese Aufnahmen bestehen aus extrahierten Screenshots 
+von YouTube-Videos, Bildmaterial von Fußballvereinen sowie verschiedenen Online-Quellen. Zusätzlich sind 
+eigene Videoaufnahmen von Amateurspielen (aufgenommen mit einem iPhone 15 Pro) eingeplant, um die exakte 
+Kameraposition des Projekts zu simulieren.
 
 Die Annotation des gesamten Datensatzes erfolgte auf der Plattform Roboflow. Es wurden vier Zielklassen 
-definiert: \texttt{player}, \texttt{goalkeeper}, \texttt{referee} und \texttt{ball}. Um den Arbeitsaufwand 
-bei der Markierung des Balls zu minimieren, kam das KI-gestützte Segmentierungswerkzeug \ac{SAM} 
-(Segment Anything Model) von Roboflow zum Einsatz. Die Spieler wurden hingegen manuell mit Bounding 
-Boxes versehen. Dabei wurde strikt das Prinzip der \textit{Amodal Bounding Box} angewendet: Die Begrenzungsbox
-wurde vom Kopf des Spielers bis exakt zu dem Punkt gezogen, an dem die Füße den Rasen berühren -- selbst dann, 
-wenn die Beine durch einen Gegenspieler verdeckt waren. Diese Methodik ist zwingend erforderlich, um dem 
-nachfolgenden Homografie-Modul stets die korrekte Bodenkoordinate für die 2D-Transformation zu liefern.
+definiert: \texttt{ball} (ID 0), \texttt{goalkeeper} (ID 1), \texttt{player} (ID 2) und \texttt{referee} (ID 3).
+ Um den Arbeitsaufwand bei der Markierung des Balls zu minimieren, kam das KI-gestützte 
+ Segmentierungswerkzeug \ac{SAM} von Roboflow zum Einsatz. Die Spieler wurden hingegen manuell 
+ mit Bounding Boxes versehen. Dabei wurde strikt das Prinzip der \textit{Amodal Bounding Box} 
+ angewendet, wie in Abb.~\ref{abb:roboflow-amodal} zu sehen ist: Die Begrenzungsbox wurde vom Kopf 
+ des Spielers bis exakt zu dem Punkt gezogen, an dem die Füße den Rasen berühren~-- selbst dann, wenn 
+ die Beine durch einen Gegenspieler verdeckt waren. Diese Methodik ist zwingend erforderlich, um dem 
+ nachfolgenden Homografie-Modul stets die korrekte Bodenkoordinate für die 2D-Transformation zu liefern.
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\linewidth]{images/roboflow-amodal-ishak.png}
+    \caption{Annotation in Roboflow: Die Bounding Box wird bis zur Rasenebene gezogen (Amodal Bounding Box), um den Fußpunkt für das Tracking zu sichern (eigene Darstellung in Roboflow).}\label{abb:roboflow-amodal}
+\end{figure}
 
- \begin{figure}[htbp]
-     \centering
-     \includegraphics[width=0.75\linewidth]{images/roboflow-amodal-ishak.png}
-     \caption{Annotation in Roboflow: Die Bounding Box wird bis zur Rasenebene gezogen (Amodal Bounding Box), um den Fußpunkt für das Tracking zu sichern.}
-     \label{abb:roboflow-amodal}
- \end{figure}
+Der automatisierte Download und die Versionierung des Datensatzes aus dem Roboflow-Workspace erfolgen 
+über ein eigenes Python-Skript unter Verwendung des offiziellen Roboflow-SDKs 
+(siehe Quellcode~\ref{code:roboflow-download}). Nach dem Herunterladen wird der Datensatz in die 
+Unterverzeichnisse \texttt{train} (Training), \texttt{valid} (Validierung während der Epochen) 
+und \texttt{test} (finale Evaluierung) gegliedert und über die zentrale 
+Konfigurationsdatei \texttt{data.yaml} (siehe Quellcode~\ref{code:data-yaml}) an 
+die Trainingspipeline angebunden.
+
+\begin{lstlisting}[language=Python, caption={Automatisierter Datensatz-Bezug über die Roboflow-API (\texttt{data.py})}, label=code:roboflow-download]
+from roboflow import Roboflow
+
+rf = Roboflow(api_key="ROBOFLOW_API_KEY")
+workspace = rf.workspace("roboflow-jvuqo")
+project = workspace.project("football-players-detection-3zvbc")
+
+dataset = project.version(1).download("yolov8")
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Struktur der Datensatz-Konfigurationsdatei (\texttt{data.yaml})}, label=code:data-yaml]
+path: ./dataset
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 4
+names:
+  - ball
+  - goalkeeper
+  - player
+  - referee
+\end{lstlisting}
 
 \subsection{Setup der Trainingsumgebung und Hardware}
+
 Die Aufnahme der realen Spieldaten erfolgt über ein Zwei-Kamera-Setup, dessen Bilder zu einem nahtlosen 
-Panorama zusammengefügt werden. Dies stellt sicher, dass Spieler beim Verlassen eines einzelnen Kamerabildes 
-nicht aus dem Frame verschwinden und das Tracking nicht abbricht. 
+Panorama zusammengefügt werden. Dies stellt sicher, dass Spieler beim Verlassen eines einzelnen 
+Kamerabildes nicht aus dem Frame verschwinden und das Tracking nicht abbricht.
 
 Für die Softwareentwicklung und das Modell-Training wurde die Arbeitslast auf zwei unterschiedliche 
-Hardware-Systeme aufgeteilt. Ein MacBook Pro (mit Apple M1 Chip) fungiert als primäre Entwicklungsstation. 
-Hier werden die Datensätze in Roboflow annotiert, die theoretische Dokumentation verfasst und der Python-Code 
-für die Inferenz geschrieben. Da der M1-Chip für das Deep-Learning-Training großer Modelle über hunderte 
-Epochen jedoch nicht die erforderliche Rechenleistung aufweist, wurde das eigentliche Fine-Tuning ausgelagert.
+Hardware-Systeme aufgeteilt. Ein MacBook Pro (mit Apple M1 Pro 10-Core-Chip) fungiert als primäre 
+Entwicklungsstation. Hier werden die Datensätze in Roboflow annotiert, die theoretische Dokumentation 
+verfasst und der Python-Code für die Inferenz unter Nutzung der \ac{MPS}-Schnittstelle getestet. Da der 
+M1-Chip für das Deep-Learning-Training großer Modelle über hunderte Epochen jedoch nicht die erforderliche 
+Rohleistung aufweist, wurde das eigentliche Fine-Tuning ausgelagert.
 
-Das rechenintensive Modell-Training, die Fehleranalyse und die Code-Kompilierung für das neuronale Netz werden 
-auf einem dedizierten Windows-PC mit einer NVIDIA RTX 3080 Grafikkarte durchgeführt. Die hohe Anzahl an 
-CUDA-Cores und der große VRAM (Video Random Access Memory) dieser GPU reduzieren die Trainingsdauer signifikant.
+Das rechenintensive Modell-Training, die Fehleranalyse und die Hyperparameter-Optimierung für das neuronale 
+Netz werden auf einem dedizierten Windows-PC mit einem AMD Ryzen 7 7700X Prozessor, 
+32\,GB DDR5-Arbeitsspeicher und einer NVIDIA GeForce RTX 3080 Grafikkarte durchgeführt. Die hohe Anzahl an 
+CUDA-Cores und der 10\,GB große \ac{VRAM} dieser GPU reduzieren die Trainingsdauer signifikant.
 
 Die Synchronisation des Quellcodes und der Dokumentation im Team erfolgt über die Versionsverwaltung Git 
-und die Plattform GitHub. Während die schriftliche Dokumentation in einem gemeinsamen Team-Repository gepflegt 
-wird, wurde für das Training der Künstlichen Intelligenz ein separates, privates GitHub-Repository eingerichtet.
-Dort werden die Trainingsskripte, Konfigurationsdateien und schließlich die fertigen Modellgewichte (Weights) 
-hochgeladen, sodass die fertige KI nach Abschluss des Trainings von jedem System aus heruntergeladen und für 
-die Inferenz genutzt werden kann.
+und die Plattform GitHub. Während die schriftliche Dokumentation in einem gemeinsamen Team-Repository 
+gepflegt wird, wurde für das Training der \ac{KI} ein separates, privates GitHub-Repository eingerichtet. 
+Dort werden die Trainingsskripte, Konfigurationsdateien und schließlich die fertigen Modellgewichte 
+(\texttt{best.pt}) hochgeladen, sodass die trainierte \ac{KI} nach Abschluss des Trainings von jedem 
+System aus heruntergeladen und für die Inferenz genutzt werden kann.
 
 \subsection{Fine-Tuning und Hyperparameter-Konfiguration}
+
 Für das Training des Modells fiel die Wahl primär auf die Architektur YOLOv8-Nano (\texttt{yolov8n.pt}), 
 mit der Option einer späteren Skalierung auf YOLOv8-Small (\texttt{yolov8s.pt}). Diese Entscheidung basiert 
-auf einem Kompromiss zwischen der maximalen Inferenzgeschwindigkeit -- welche für die spätere Videoanalyse 
-unerlässlich ist -- und der Speicherkapazität (VRAM) der lokal verwendeten NVIDIA RTX 3080.
+auf einem Kompromiss zwischen der maximalen Inferenzgeschwindigkeit~-- welche für die spätere Videoanalyse
+unerlässlich ist~-- und der Speicherkapazität (\ac{VRAM}) der lokal verwendeten NVIDIA RTX 3080.
 
-Das Fine-Tuning wurde initial über 50 Epochen mit einer Batch-Size von 16 angesetzt. Als Grundlage dient ein 
-kombinierter Datensatz aus etwa 1.500 Aufnahmen. Da das zu analysierende Videomaterial über ein 
-Zwei-Kamera-Setup aus knapp fünf Metern Höhe in 4K-Auflösung aufgezeichnet wird, ist die Wahl der 
-Eingangsauflösung (\texttt{imgsz}) kritisch. Während erste Trainingsläufe und Validierungen auf 640 Pixel 
-normiert wurden (siehe Quellcode~\ref{code:training}), erfordern die feinen Details des Panoramabildes in 
-der finalen Evaluierung höhere Auflösungen.
+Das Fine-Tuning wurde initial über 50 Epochen angesetzt. Da das zu analysierende Videomaterial über 
+zwei Smartphones aus knapp fünf Metern Höhe am Spielfeldrand in 4K-Auflösung aufgezeichnet wird, ist 
+ie Wahl der Eingangsauflösung (\texttt{imgsz}) kritisch. Während erste Trainingsläufe zur 
+Pipeline-Verifikation auf 640 Pixel normiert wurden, erfordern die feinen Details des 
+Panoramabildes in den weiterführenden Trainingsläufen höhere Auflösungen von bis zu 1280 
+Pixeln. Tab.~\ref{tab:hyperparameter} zeigt die zentralen Konfigurationsparameter des 
+Trainingslaufs.
 
-\begin{lstlisting}[language=Python, caption={Initiales Trainings-Skript für das YOLOv8 Fine-Tuning}, label=code:training]
+\begin{table}[htbp]
+    \centering
+    \caption{Zentrale Hyperparameter für das YOLOv8 Fine-Tuning}\label{tab:hyperparameter}
+    \begin{tabularx}{\linewidth}{llX}
+        \tabkopf{}
+        Parameter & Gewählter Wert & Technische Begründung \\
+        \texttt{model} & \texttt{yolov8n.pt} / \texttt{yolov8s.pt} & Hohe Inferenzgeschwindigkeit bei geringem Speicherbedarf \\
+        \texttt{epochs} & 50--100 & Ausreichende Konvergenz auf dem Fußball-Zieldatensatz \\
+        \texttt{imgsz} & 640 / 1280 & Detailerhalt für weit entfernte Spieler im Panorama \\
+        \texttt{batch} & 16 (CUDA) / 8 (MPS) & Optimale Auslastung des jeweiligen Grafikspeichers \\
+        \texttt{erasing} & 0.4 & Random Erasing zur Steigerung der Verdeckungstoleranz \\
+        \texttt{mosaic} & 1.0 & 4-Bild-Collage zur Verbesserung der Small Object Detection \\
+    \end{tabularx}
+\end{table}
+
+Um das Trainingsskript ohne Code-Änderungen sowohl auf dem Windows-Trainingssystem (NVIDIA CUDA) als 
+auch auf dem MacBook Pro (Apple \ac{MPS}) ausführen zu können, wurde eine automatische Hardware-Erkennung 
+in \texttt{train.py} implementiert (siehe Quellcode~\ref{code:training}).
+
+\begin{lstlisting}[language=Python, caption={Plattformübergreifendes Trainings-Skript für das YOLOv8 Fine-Tuning (\texttt{train.py})}, label=code:training]
+import torch
 from ultralytics import YOLO
 
 if __name__ == "__main__":
+    if torch.backends.mps.is_available():
+        device = "mps"
+        batch_size = 8
+    elif torch.cuda.is_available():
+        device = 0
+        batch_size = 16
+    else:
+        device = "cpu"
+        batch_size = 4
+
     model = YOLO("yolov8n.pt")
-    
+
     model.train(
-        data="C:/vertex-ki/dataset/data.yaml",
+        data="dataset/data.yaml",
         epochs=50,
         imgsz=640,
-        device=0,
-        batch=16,
+        device=device,
+        batch=batch_size,
+        erasing=0.4,
+        mosaic=1.0,
         project="runs/train",
         name="fussball_v1"
     )
 \end{lstlisting}
 
 \subsection{Optimierung der Inferenz für Verdeckung (Occlusion)}
-Die erste Trainingsphase dient primär der Identifikation von Modellschwächen, insbesondere bei extremen 
-Spielerdichten im Strafraum. Um zu verhindern, dass die \ac{NMS} (Non-Maximum Suppression) gültige Spieler 
-bei Überschneidungen fälschlicherweise löscht, wird in der Inferenz-Phase der \ac{IoU}-Schwellenwert 
-situationsbedingt angepasst.
+
+Die erste Trainingsphase dient primär der Identifikation von Modellschwächen, insbesondere bei 
+extremen Spielerdichten im Strafraum. Um zu verhindern, dass die \ac{NMS} gültige Spieler bei 
+Überschneidungen fälschlicherweise löscht, wird in der Inferenz-Phase der \ac{IoU}-Schwellenwert 
+situationsbedingt angepasst und klassenspezifisches Filtern (\texttt{agnostic\_nms=False}) erzwungen, 
+damit beispielsweise ein direkt vor den Füßen liegender Ball niemals die Bounding Box des Spielers 
+unterdrückt.
 
 Da das breite 4K-Panoramabild die Spieler auf der gegenüberliegenden Spielfeldseite extrem klein darstellt, 
-wird zusätzlich der \ac{SAHI}-Algorithmus (Slicing Aided Hyper Inference)~\cite{akyon2022sahi} in die Pipeline integriert. Dieses 
-Verfahren zerschneidet das großflächige Quellbild in kleinere, überlappende Kacheln (Slices). Das YOLO-Modell 
-inferiert jede Kachel separat in voller Auflösung, bevor die erkannten Bounding Boxes über ein angepasstes 
-NMS-Verfahren wieder zum Gesamtbild zusammengefügt werden. Diese Methode steigert die Erkennungsrate (Recall) 
-bei kleinen und teilweise verdeckten Spielern massiv, ohne dass das Modelltraining auf unrealistisch hohe 
-Auflösungen skaliert werden muss.
+wird zusätzlich der \ac{SAHI}-Algorithmus~\cite{akyon2022sahi} in die Pipeline integriert. Dieses 
+Verfahren zerschneidet das großflächige Quellbild in kleinere, überlappende Kacheln (Slices) von 
+beispielsweise $640 \times 640$ Pixeln bei einer Überlappungsrate von 25\,\%. Das \ac{YOLO}-Modell 
+inferiert jede Kachel separat in voller Auflösung, bevor die erkannten Bounding Boxes über ein 
+Greedy-Non-Maximum-Merging-Verfahren wieder zum Gesamtbild zusammengefügt werden. Diese Methode 
+steigert die Erkennungsrate (Recall) bei kleinen und teilweise verdeckten Spielern massiv, ohne 
+dass das Modelltraining auf unrealistisch hohe Auflösungen skaliert werden muss.
 
 \subsection{Entwicklung der Datenschnittstelle (JSON-Export)}
+
 Um die erkannten Bildkoordinaten an das nachfolgende Modul zur Homografie-Berechnung zu übergeben, wurde 
-eine entkoppelte Datenschnittstelle konzipiert. YOLO exportiert Bounding Boxes nativ in einem normierten Format,
-bestehend aus Klassen-ID, dem Zentrum der Box ($x_{center}, y_{center}$) sowie der relativen Breite und Höhe
-(siehe Quellcode~\ref{code:yolo-labels}). 
+eine entkoppelte Datenschnittstelle konzipiert. \ac{YOLO} speichert und verarbeitet Bounding Boxes nativ 
+in einem auf das Intervall $[0, 1]$ normierten Format, bestehend aus Klassen-ID, dem Zentrum der 
+Box ($x_{\text{center}}, y_{\text{center}}$) sowie der relativen Breite und Höhe 
+(siehe Quellcode~\ref{code:yolo-labels}).
 
 \begin{lstlisting}[caption={Auszug aus den nativen YOLO-Label-Daten (Klassen-ID, x\_center, y\_center, width, height)}, label=code:yolo-labels]
 2 0.5201979 0.3360462 0.0223489 0.0405833
@@ -116,14 +191,105 @@ bestehend aus Klassen-ID, dem Zentrum der Box ($x_{center}, y_{center}$) sowie d
 1 0.7028645 0.2861111 0.0109375 0.0388888
 \end{lstlisting}
 
-Da das Zentrum der Bounding Box anatomisch den Torso des Spielers abbildet, würde eine direkte 2D-Transformation
-aufgrund der Kameraperspektive zu erheblichen Parallaxenfehlern auf dem virtuellen Spielfeld führen. Ein 
-eigens entwickeltes Python-Skript konvertiert daher diese normierten Daten in absolute Pixelkoordinaten und 
-berechnet den exakten Fußpunkt auf der Rasenebene. Da YOLO das obere linke Eck des Bildes als Ursprung $(0,0)$ 
-definiert, ergibt sich die absolute Y-Koordinate des Fußpunktes ($y_{foot}$) mathematisch aus 
-$y_{center} + \frac{height}{2}$. 
+Da das Zentrum der Bounding Box anatomisch den Torso des Spielers abbildet, würde eine direkte 
+2D-Transformation aufgrund der Kameraperspektive zu erheblichen Parallaxenfehlern auf dem 
+virtuellen Spielfeld führen. Ein eigens entwickeltes Python-Modul konvertiert daher die 
+detektierten Boxen in absolute Pixelkoordinaten und berechnet den exakten Fußpunkt 
+$(u_{\text{foot}}, v_{\text{foot}})$ auf der Rasenebene ($Z=0$). Da in der digitalen 
+Bildverarbeitung das obere linke Eck des Bildes als Ursprung $(0,0)$ definiert ist und 
+die Y-Achse nach unten verläuft, ergibt sich der Fußpunkt aus den Eckkoordinaten 
+$(x_1, y_1, x_2, y_2)$ beziehungsweise den normierten Werten bei einer Bildauflösung von 
+$W \times H$ durch:
+\begin{equation}
+    u_{\text{foot}} = \frac{x_1 + x_2}{2} = x_{\text{center}} \cdot W, \qquad v_{\text{foot}} = y_2 = \left(y_{\text{center}} + \frac{h}{2}\right) \cdot H
+\end{equation}
 
-Die bereinigten Daten werden Frame für Frame in einer strukturierten JSON-Datei gespeichert. Diese enthält 
-die Frame-Nummer, die Klassen-ID (0: ball, 1: goalkeeper, 2: player, 3: referee), den Confidence-Score sowie 
-die korrigierten Fußpunkt-Koordinaten (X und Y) in Pixeln. Dieser strukturierte JSON-Export dient als robuster 
-Datenvertrag (Data Contract) für die anschließende Distanzberechnung und das Dashboarding.
+Quellcode~\ref{code:json-exporter} zeigt die Implementierung der Export-Funktion, welche 
+ein Video Frame für Frame auswertet, die Fußpunkte extrahiert und die Ergebnisse strukturiert 
+ablegt.
+
+\begin{lstlisting}[language=Python, caption={Extraktion der Fußpunkt-Koordinaten und Serialisierung als JSON-Datenvertrag}, label=code:json-exporter]
+import json
+import cv2
+from ultralytics import YOLO
+
+def export_detections_to_json(video_path: str, model_path: str, out_json: str):
+    model = YOLO(model_path)
+    cap = cv2.VideoCapture(video_path)
+    fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+
+    payload = {"video_source": video_path, "fps": fps, "frames": []}
+    frame_idx = 0
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        res = model.predict(
+            source=frame, imgsz=1280, conf=0.35, iou=0.55, verbose=False
+        )[0]
+        frame_objects = []
+
+        for box in res.boxes:
+            x1, y1, x2, y2 = box.xyxy[0].tolist()
+            cls_id = int(box.cls[0])
+            conf = round(float(box.conf[0]), 4)
+
+            u_foot = round((x1 + x2) / 2.0, 2)
+            v_foot = round(y2, 2)
+
+            frame_objects.append({
+                "class_id": cls_id,
+                "class_name": model.names[cls_id],
+                "confidence": conf,
+                "bbox_xyxy": [round(x1, 2), round(y1, 2), round(x2, 2), round(y2, 2)],
+                "foot_point_uv": [u_foot, v_foot]
+            })
+
+        payload["frames"].append({
+            "frame_index": frame_idx,
+            "timestamp_sec": round(frame_idx / fps, 3),
+            "detections": frame_objects
+        })
+        frame_idx += 1
+
+    cap.release()
+    with open(out_json, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2)
+\end{lstlisting}
+
+Die erzeugte JSON-Datei (siehe Quellcode~\ref{code:json-sample}) enthält für jedes Einzelbild 
+den Zeitstempel, die Klassen-ID, den Confidence-Score sowie die korrigierten Fußpunkt-Koordinaten. 
+Dieser strukturierte JSON-Export dient als verbindlicher Datenvertrag (Data Contract) zwischen 
+dem \ac{CV}-Modul, der Homografie- und Tracking-Pipeline sowie dem Backend zur Speicherung in 
+der MariaDB-Datenbank.
+
+\begin{lstlisting}[caption={Beispielhafte Struktur des erzeugten JSON-Datenvertrags für ein einzelnes Video-Frame}, label=code:json-sample]
+{
+  "video_source": "match_panorama_01.mp4",
+  "fps": 30.0,
+  "frames": [
+    {
+      "frame_index": 0,
+      "timestamp_sec": 0.0,
+      "detections": [
+        {
+          "class_id": 2,
+          "class_name": "player",
+          "confidence": 0.9142,
+          "bbox_xyxy": [1042.5, 340.0, 1088.3, 452.8],
+          "foot_point_uv": [1065.4, 452.8]
+        },
+        {
+          "class_id": 0,
+          "class_name": "ball",
+          "confidence": 0.8410,
+          "bbox_xyxy": [1080.1, 440.2, 1094.5, 454.6],
+          "foot_point_uv": [1087.3, 454.6]
+        }
+      ]
+    }
+  ]
+}
+\end{lstlisting}
