@@ -3,19 +3,21 @@
 
 \label{sec:Grundlage-Akpinar}
 
-Für die Auswertung von Laufwegen werden zeitlich zusammenhängende
+\begin{zitatfreistehend}
+\enquote{Für die Auswertung von Laufwegen werden zeitlich zusammenhängende
 Spielerpositionen in einem metrischen Koordinatensystem benötigt.
 Der Teilbereich umfasst die Aufbereitung der Aufnahmen zweier
 nebeneinander angeordneter Kameras, die Verfolgung erkannter Spieler
 und die Abbildung ihrer Bildpositionen auf die Spielfeldebene.
 Diese Verarbeitungsschritte verbinden die Objekterkennung mit den
-Positionsdaten für die spätere Auswertung und Visualisierung.
+Positionsdaten für die spätere Auswertung und Visualisierung.}~\cite{akpinar-codex-20261029a}
+\end{zitatfreistehend}
 
 \subsection{Bildaufbereitung und Video-Stitching}
-Beim Video-Stitching werden die sich überlappenden Ansichten zweier Kameras
-zu einer gemeinsamen Panoramaansicht zusammengefügt.
+\enquote{Beim Video-Stitching werden die sich überlappenden Ansichten zweier Kameras
+zu einer gemeinsamen Panoramaansicht zusammengefügt.}~\cite{akpinar-codex-20261029a}
 Dazu werden übereinstimmende Punkte in beiden Kameraansichten, beispielsweise Schnittpunkte von Spielfeldlinien, einander zugeordnet. Anhand dieser Zuordnung werden die Bilder geometrisch ausgerichtet.
-Die Aufnahmen werden dazu auf eine gemeinsame Bildfläche transformiert.
+\enquote{Die Aufnahmen werden dazu auf eine gemeinsame Bildfläche transformiert.}~\cite{akpinar-codex-20261029a}
 Die Open Computer Vision Library stellt dafür Verfahren zur Merkmalzuordnung, Bildtransformation, Belichtungsanpassung und Überblendung bereit~\cite{akpinar-opencv-stitching}.
 
 Neben der räumlichen Ausrichtung müssen auch die Aufnahmezeitpunkte
