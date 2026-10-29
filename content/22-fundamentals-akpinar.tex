@@ -1,16 +1,21 @@
-\section{Emres Abschnitt}
+\section{Videoaufbereitung und Spielertracking}
 \abschnittsautor{E. Akpinar}
 
 \label{sec:Grundlage-Akpinar}
 
-Um ein Analyse der Laufwege der Spieler auswerten zu können, müssen aus Fußballvideos zeitlich zussamenhängende Spielerpositionen in einem metrischen Koordinatensystem gewonnen werden.
-In diesem Teilbereich werden die Aufnahmen zweier nebeneinander gestellten Kameras (die zusammen ein Panorama bilden), das Verfolgen erkannter Spieler und die geometrische Abbildung auf die Spielfeldebene abgebildet. 
-Diese Verarbeitungsschritte verbinden die Objekterkennung mit den Positionsdaten für das Dashboard.
+Für die Auswertung von Laufwegen werden zeitlich zusammenhängende
+Spielerpositionen in einem metrischen Koordinatensystem benötigt.
+Der Teilbereich umfasst die Aufbereitung der Aufnahmen zweier
+nebeneinander angeordneter Kameras, die Verfolgung erkannter Spieler
+und die Abbildung ihrer Bildpositionen auf die Spielfeldebene.
+Diese Verarbeitungsschritte verbinden die Objekterkennung mit den
+Positionsdaten für die spätere Auswertung und Visualisierung.
 
 \subsection{Bildaufbereitung und Video-Stitching}
-Beim Video-Stitching werden die nebeneinander stehenden Kameraansichten zu einem Video zussamengesetzt.
+Beim Video-Stitching werden die sich überlappenden Ansichten zweier Kameras
+zu einer gemeinsamen Panoramaansicht zusammengefügt.
 Dazu werden übereinstimmende Punkte in beiden Kameraansichten, beispielsweise Schnittpunkte von Spielfeldlinien, einander zugeordnet. Anhand dieser Zuordnung werden die Bilder geometrisch ausgerichtet.
-Zuletzt, werden die Aufnahmem auf eine gemeinsame Bildfläche transformiert.
+Die Aufnahmen werden dazu auf eine gemeinsame Bildfläche transformiert.
 Die Open Computer Vision Library stellt dafür Verfahren zur Merkmalzuordnung, Bildtransformation, Belichtungsanpassung und Überblendung bereit~\cite{akpinar-opencv-stitching}.
 
 Neben der räumlichen Ausrichtung müssen auch die Aufnahmezeitpunkte
@@ -22,18 +27,10 @@ deshalb zeitlich aufeinander abgestimmt werden. Spielfeldlinien eignen sich
 für die räumliche Ausrichtung, da sie während der Aufnahme an derselben
 Stelle bleiben.
 
-Neben der räumlichen Ausrichtung müssen auch die Aufnahmezeitpunkte
-übereinstimmen. Zeigt eine Kamera eine etwas spätere Spielsituation als die
-andere, befindet sich ein laufender Spieler möglicherweise bereits an einer
-anderen Stelle. Beim Zusammenfügen können dadurch doppelte oder versetzte
-Spielerbilder entstehen. Für das Zwei-Kamera-System müssen die Aufnahmen
-deshalb zeitlich aufeinander abgestimmt werden. Spielfeldlinien eignen sich
-für die räumliche Ausrichtung, da sie während der Aufnahme an derselben
-Stelle bleiben.
-
 \subsection{Spielertracking über aufeinanderfolgende Bilder}
+\abschnittsautor{E. Akpinar}
 
-ie Objekterkennung bestimmt für jedes einzelne Bild, wo sich Spieler
+Die Objekterkennung bestimmt für jedes einzelne Bild, wo sich Spieler
 befinden. Beim Tracking werden diese einzelnen Erkennungen über mehrere
 Bilder hinweg miteinander verbunden. Das Ziel ist, denselben Spieler im
 weiteren Verlauf wiederzuerkennen und seine Bewegung zu verfolgen.
@@ -49,4 +46,4 @@ Bewegungsvorhersage beschreibt, wo ein Spieler im nächsten Bild erwartet
 wird. Der Vergleich dieser Vorhersage mit den neuen Erkennungen bildet
 eine Grundlage für die weitere Zuordnung. Fehler in der Objekterkennung
 wirken sich deshalb auch auf das Tracking aus: Wird ein Spieler übersehen
-oder seine Position ungenau bestimmt, wird die Fortsetzung seiner Spurschwieriger~\cite{akpinar-bewley-sort}.
+oder seine Position ungenau bestimmt, wird die Fortsetzung seiner Spur schwieriger~\cite{akpinar-bewley-sort}.
