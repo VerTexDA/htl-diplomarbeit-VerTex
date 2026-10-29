@@ -10,6 +10,12 @@ Antwortzeiten -- keine Adjektive. Tab.~\ref{tab:sollist} zeigt den Abgleich.
 Auf jede Tabelle und jede Abbildung muss im Text Bezug genommen werden. Eine
 Tabelle, die nirgends erwähnt wird, gilt als nicht erklärt.
 
+\textbf{Ist jetzt nur so grschrieben von mir (momo) kann auch geänbdert werden}
+Dieses Kapitel bewertet den Grad der Zielerreichung des Gesamtprojekts \textit{VerTeX}. 
+Dazu werden die in der Problemstellung definierten messbaren Anforderungen den tatsächlichen 
+Testergebnissen der einzelnen Systemkomponenten gegenübergestellt.
+
+\textbf{Vorlagentabelle die schon vorher da war}
 \begin{table}[htbp]
   \caption{Soll-Ist-Abgleich der Anforderungen}
   \label{tab:sollist}
@@ -23,6 +29,28 @@ Tabelle, die nirgends erwähnt wird, gilt als nicht erklärt.
     \bottomrule
   \end{tabular}
 \end{table}
+
+\begin{table}[htbp]
+  \caption{Soll-Ist-Abgleich der Projektanforderungen}
+  \label{tab:sollist}
+  \centering
+  \begin{tabular}{@{}p{0.40\linewidth}p{0.22\linewidth}p{0.23\linewidth}@{}}
+    \toprule
+    \bfseries Anforderung & \bfseries Soll-Wert & \bfseries Ist-Wert \\
+    \midrule
+    Detektions-Recall bei Verdeckung (Teilbereich B) & $\ge 80\,\%$ bei starken Zweikämpfen & $84{,}2\,\%$ (nach Fine-Tuning mit SAHI) \\
+    \addlinespace
+    Genauigkeit der 2D-Homografie (Teilbereich A) & Mittlerer Messfehler $< 0{,}5\,\text{m}$ auf dem Spielfeld & $0{,}32\,\text{m}$ Abweichung an Referenzpunkten \\
+    \addlinespace
+    API-Antwortzeit \& Latenz (Teilbereich C) & $< 500\,\text{ms}$ pro Datenabfrage & $380\,\text{ms}$ bei Volllast \\
+    \addlinespace
+    Abweisung fremder Clients / Auth & $100\,\%$ Schutz unautorisierter Zugriffe & $100\,\%$ über Token-Validierung \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+
+
 
 \section{Fazit und Ausblick}
 
