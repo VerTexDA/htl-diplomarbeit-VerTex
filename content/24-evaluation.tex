@@ -18,7 +18,7 @@ Testergebnissen der einzelnen Systemkomponenten gegenübergestellt.
 \textbf{Vorlagentabelle die schon vorher da war}
 \begin{table}[htbp]
   \caption{Soll-Ist-Abgleich der Anforderungen}
-  \label{tab:sollist}
+  \label{tab:sollist-vorlage}
   \centering
   \begin{tabular}{@{}p{0.45\linewidth}p{0.2\linewidth}p{0.25\linewidth}@{}}
     \toprule
@@ -49,9 +49,32 @@ Testergebnissen der einzelnen Systemkomponenten gegenübergestellt.
   \end{tabular}
 \end{table}
 
+\section{Zwischenergebnisse der Spielererkennung (Run 1)}
+\abschnittsautor{M. Ishak}
 
+Im ersten Benchmark-Vergleich auf dem 19-sekündigen Veo-Testvideo zeigte das feingetunte Basismodell 
+(trainiert auf rund 1.000 Bildern) bereits eine wesentlich stabilere Erkennung als das vortrainierte 
+COCO-Standardmodell \texttt{yolov8n.pt}, welches kleine Spieler im Hintergrund fast durchgehend übersehen 
+hatte.
 
+Durch das Setzen des Parameters \texttt{agnostic\_nms=True} in der Inferenz-Pipeline konnten doppelte 
+Bounding Boxes (gleichzeitige Detektion als \texttt{player} und \texttt{referee} auf derselben Person) 
+beseitigt werden (siehe Abb.~\ref{abb:eval-agnostic}).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\linewidth]{images/eval-run1-agnostic.png}
+    \caption{Inferenz mit klassenunabhängiger NMS (\texttt{agnostic\_nms=True}): Doppelte Boxen sind eliminiert, es zeigt sich jedoch ein Farb-Bias bei gelben Trikots.}\label{abb:eval-agnostic}
+\end{figure}
+
+Bei der Detailanalyse der Videosequenz zeigte sich jedoch ein deutlicher Bias hinsichtlich der 
+Trikotfarben: Da Schiedsrichter im Basisdatensatz häufig neongelbe oder schwarze Kleidung tragen,
+klassifiziert das Modell Feldspieler der gelb gekleideten Mannschaft phasenweise fälschlicherweise 
+als \texttt{referee} (in Abb.~\ref{abb:eval-agnostic} im Vordergrund mit \texttt{referee 0.54}). 
+Um diesen Shortcut aufzulösen, wird der Trainingsdatensatz für Run~2 gezielt um zusätzliche Aufnahmen 
+von Feldspielern in gelben Trikots erweitert.
 
 \section{Fazit und Ausblick}
+\abschnittsautor{\alleautoren}
 
 Was ist fertig, was fehlt, und was wären die nächsten sinnvollen Schritte?
