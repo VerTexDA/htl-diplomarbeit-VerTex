@@ -1,0 +1,32 @@
+name: Unveränderliches Tages-Backup
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Datum-basiertes Backup-Tag erstellen
+        run: |
+          git config user.name "Sicherheits Bot"
+          git config user.email "bot@users.noreply.github.com"
+          
+          # Erstellt einen eindeutigen Tag mit dem aktuellen Datum (z.B. backup-2026-10-29)
+          TAG_NAME="backup-$(date +%Y-%m-%d)"
+          
+          # Prüft, ob der Tag für heute schon existiert, und setzt ihn auf den aktuellen main-Stand
+          git tag -f "$TAG_NAME" main
+          git push origin "$TAG_NAME" --force
