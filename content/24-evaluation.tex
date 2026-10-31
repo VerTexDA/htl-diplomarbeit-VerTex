@@ -1,34 +1,11 @@
 \chapter{Evaluierung und Ergebnisse}
 \abschnittsautor{\alleautoren}
 
+Dieses Kapitel bewertet den Grad der Zielerreichung des Gesamtprojekts \textit{VerTeX}. Dazu werden die in der Problemstellung definierten messbaren Anforderungen den tatsächlichen Testergebnissen der einzelnen Systemkomponenten gegenübergestellt.
+
 \section{Soll-Ist-Abgleich}
 
-Stellt die Anforderungen aus der Zielsetzung dem tatsächlichen Ergebnis
-gegenüber. Messbare Aussagen sind Pflicht: Zahlen, Testergebnisse,
-Antwortzeiten -- keine Adjektive. Tab.~\ref{tab:sollist} zeigt den Abgleich.
-
-Auf jede Tabelle und jede Abbildung muss im Text Bezug genommen werden. Eine
-Tabelle, die nirgends erwähnt wird, gilt als nicht erklärt.
-
-\textbf{Ist jetzt nur so grschrieben von mir (momo) kann auch geänbdert werden}
-Dieses Kapitel bewertet den Grad der Zielerreichung des Gesamtprojekts \textit{VerTeX}. 
-Dazu werden die in der Problemstellung definierten messbaren Anforderungen den tatsächlichen 
-Testergebnissen der einzelnen Systemkomponenten gegenübergestellt.
-
-\textbf{Vorlagentabelle die schon vorher da war}
-\begin{table}[htbp]
-  \caption{Soll-Ist-Abgleich der Anforderungen}
-  \label{tab:sollist-vorlage}
-  \centering
-  \begin{tabular}{@{}p{0.45\linewidth}p{0.2\linewidth}p{0.25\linewidth}@{}}
-    \toprule
-    \bfseries Anforderung & \bfseries Soll & \bfseries Ist \\
-    \midrule
-    Antwortzeit der Produktliste & < 500\,ms & 380\,ms \\
-    Abweisung fremder Konten     & 100\,\%   & 100\,\% \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+Der Soll-Ist-Abgleich in Tab.~\ref{tab:sollist} überprüft die quantitativen und qualitativen Kernanforderungen des Projekts. Messbare Parameter wie Detektionsgenauigkeiten, Messabweichungen der Homografie und API-Antwortzeiten dienen dabei als objektive Beurteilungsgrundlage.
 
 \begin{table}[htbp]
   \caption{Soll-Ist-Abgleich der Projektanforderungen}
@@ -49,32 +26,32 @@ Testergebnissen der einzelnen Systemkomponenten gegenübergestellt.
   \end{tabular}
 \end{table}
 
-\section{Zwischenergebnisse der Spielererkennung (Run 1)}
-\abschnittsautor{M. Ishak}
+\section{Zwischenergebnisse der Spielererkennung (Run 1 und Run 2)}
 
-Im ersten Benchmark-Vergleich auf dem 19-sekündigen Veo-Testvideo zeigte das feingetunte Basismodell 
-(trainiert auf rund 1.000 Bildern) bereits eine wesentlich stabilere Erkennung als das vortrainierte 
-COCO-Standardmodell \texttt{yolov8n.pt}, welches kleine Spieler im Hintergrund fast durchgehend übersehen 
-hatte.
+\subsection{Ergebnisse und Farb-Bias in Run 1}
 
-Durch das Setzen des Parameters \texttt{agnostic\_nms=True} in der Inferenz-Pipeline konnten doppelte 
-Bounding Boxes (gleichzeitige Detektion als \texttt{player} und \texttt{referee} auf derselben Person) 
-beseitigt werden (siehe Abb.~\ref{abb:eval-agnostic}).
+Im ersten Benchmark-Vergleich auf dem 19-sekündigen Veo-Testvideo zeigte das feingetunte Basismodell (Run~1, trainiert auf rund 1.000 Bildern) bereits eine wesentlich stabilere Erkennung als das vortrainierte COCO-Standardmodell \texttt{yolov8n.pt}, welches kleine Spieler im Hintergrund fast durchgehend übersehen hatte. Durch die Aktivierung von \texttt{agnostic\_nms=True} in der Inferenz-Pipeline konnten zudem doppelte Bounding Boxes (gleichzeitige Detektion als \texttt{player} und \texttt{referee} auf derselben Person) eliminiert werden (siehe Abb.~\ref{abb:eval-agnostic}).
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.85\linewidth]{images/eval-run1-agnostic.png}
-    \caption{Inferenz mit klassenunabhängiger NMS (\texttt{agnostic\_nms=True}): Doppelte Boxen sind eliminiert, es zeigt sich jedoch ein Farb-Bias bei gelben Trikots.}\label{abb:eval-agnostic}
+    \includegraphics[width=0.68\linewidth]{images/eval-run1-agnostic.png}
+    \caption{Inferenz Run 1 (\texttt{agnostic\_nms=True}): Doppelte Boxen wurden entfernt, es trat jedoch ein deutlicher Farb-Bias bei gelben Trikots auf (\texttt{referee 0.54}).}\label{abb:eval-agnostic}
 \end{figure}
 
-Bei der Detailanalyse der Videosequenz zeigte sich jedoch ein deutlicher Bias hinsichtlich der 
-Trikotfarben: Da Schiedsrichter im Basisdatensatz häufig neongelbe oder schwarze Kleidung tragen,
-klassifiziert das Modell Feldspieler der gelb gekleideten Mannschaft phasenweise fälschlicherweise 
-als \texttt{referee} (in Abb.~\ref{abb:eval-agnostic} im Vordergrund mit \texttt{referee 0.54}). 
-Um diesen Shortcut aufzulösen, wird der Trainingsdatensatz für Run~2 gezielt um zusätzliche Aufnahmen 
-von Feldspielern in gelben Trikots erweitert.
+Bei der Detailanalyse der Videosequenz zeigte sich jedoch ein deutlicher Bias hinsichtlich der Trikotfarben: Da Schiedsrichter im Basisdatensatz häufig neongelbe oder schwarze Kleidung tragen, klassifiziert das Modell Feldspieler der gelb gekleideten Mannschaft phasenweise fälschlicherweise als \texttt{referee} (in Abb.~\ref{abb:eval-agnostic} im Vordergrund mit \texttt{referee 0.54}). Um diesen Shortcut aufzulösen, wurde der Trainingsdatensatz für Run~2 gezielt um zusätzliche Aufnahmen von Feldspielern in gelben Trikots erweitert.
+
+\subsection{Korrektur des Trikotfarben-Bias in Run 2}
+
+Um den Shortcut zu beheben, wurde der Datensatz für Run~2 gezielt um 138 Aufnahmen erweitert, wovon rund 100 Bilder Feldspieler in gelben Trikots zeigten. Vor der Zusammenführung wurden die Klassen-IDs über ein Konvertierungsskript auf die Projektstruktur synchronisiert.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.68\linewidth]{images/eval-run2-yellow-fix.png}
+    \caption{Inferenz Run 2: Erfolgreiche Reklassifizierung des gelb gekleideten Spielers im Vordergrund als \texttt{player 0.78}.}\label{abb:eval-run2}
+\end{figure}
+
+Wie in Abb.~\ref{abb:eval-run2} ersichtlich, konnte das Modell durch diese Datensatz-Kuration entkoppelt werden: Der zuvor als Schiedsrichter detektierte Feldspieler wird über den gesamten Videoverlauf stabil als \texttt{player} (Konfidenz 0{,}64 bis 0{,}88, im abgebildeten Frame \texttt{player 0.78}) klassifiziert. Vereinzelte Verwechslungen an den äußeren Bildrändern belegen jedoch, dass für atypische Perspektiven künftig weiteres Datenmaterial sowie spatiale Filterregeln integriert werden müssen.
 
 \section{Fazit und Ausblick}
-\abschnittsautor{\alleautoren}
 
 Was ist fertig, was fehlt, und was wären die nächsten sinnvollen Schritte?
