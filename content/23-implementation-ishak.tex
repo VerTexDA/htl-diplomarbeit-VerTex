@@ -161,12 +161,16 @@ if __name__ == "__main__":
 
 \subsection{Optimierung der Inferenz für Verdeckung (Occlusion)}
 
-Die erste Trainingsphase dient primär der Identifikation von Modellschwächen, insbesondere bei 
-extremen Spielerdichten im Strafraum. Um zu verhindern, dass die \ac{NMS} gültige Spieler bei 
-Überschneidungen fälschlicherweise löscht, wird in der Inferenz-Phase der \ac{IoU}-Schwellenwert 
-situationsbedingt angepasst und klassenspezifisches Filtern (\texttt{agnostic\_nms=False}) erzwungen, 
-damit beispielsweise ein direkt vor den Füßen liegender Ball niemals die Bounding Box des Spielers 
-unterdrückt.
+Die erste Trainingsphase dient primär der Identifikation von 
+Modellschwächen, insbesondere bei extremen Spielerdichten im Strafraum.
+ Um zu verhindern, dass die \ac{NMS} gültige Spieler bei 
+ Überschneidungen im Zweikampf fälschlicherweise löscht, wird in 
+ der Inferenz-Phase der \ac{IoU}-Schwellenwert 
+ auf \texttt{iou=0.55} angehoben. Gleichzeitig wird über den 
+ Parameter \texttt{agnostic\_nms=True} eine klassenübergreifende 
+ Filterung aktiviert, damit dieselbe Person nicht doppelt mit 
+ konkurrierenden Klassen (etwa gleichzeitig als \texttt{player} 
+ und \texttt{referee}) markiert wird.
 
 Da das breite 4K-Panoramabild die Spieler auf der gegenüberliegenden Spielfeldseite extrem klein darstellt, 
 wird zusätzlich der \ac{SAHI}-Algorithmus~\cite{akyon2022sahi} in die Pipeline integriert. Dieses 
