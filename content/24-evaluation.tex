@@ -52,6 +52,26 @@ Um den Shortcut zu beheben, wurde der Datensatz für Run~2 gezielt um 138 Aufnah
 
 Wie in Abb.~\ref{abb:eval-run2} ersichtlich, konnte das Modell durch diese Datensatz-Kuration entkoppelt werden: Der zuvor als Schiedsrichter detektierte Feldspieler wird über den gesamten Videoverlauf stabil als \texttt{player} (Konfidenz 0{,}64 bis 0{,}88, im abgebildeten Frame \texttt{player 0.78}) klassifiziert. Vereinzelte Verwechslungen an den äußeren Bildrändern belegen jedoch, dass für atypische Perspektiven künftig weiteres Datenmaterial sowie spatiale Filterregeln integriert werden müssen.
 
+Tab.~\ref{tab:eval-run2-metrics} zeigt die quantitativen Validierungsmetriken des überarbeiteten Modells (Run~2) nach 50 Epochen. Während die Hauptklassen \texttt{player} ($\text{mAP}_{50} = 97{,}7\,\%$) und \texttt{goalkeeper} ($\text{mAP}_{50} = 92{,}4\,\%$) eine sehr hohe Erkennungsrate aufweisen, fällt der Recall der Klasse \texttt{ball} bei einer Trainingsauflösung von $640\times640$ Pixeln mit $11{,}4\,\%$ noch gering aus. Dies bestätigt technisch die in Abschnitt~4.3.3 und 4.3.4 getroffene Entscheidung, für weit entfernte Kleinstobjekte im Panoramabild auf höhere Eingangsauflösungen (\texttt{imgsz=1280}) sowie \ac{SAHI} zu skalieren.
+
+\begin{table}[htbp]
+  \caption{Klassenspezifische Validierungsmetriken nach Fine-Tuning (Run 2, \texttt{imgsz=640})}
+  \label{tab:eval-run2-metrics}
+  \centering
+  \begin{tabular}{@{}lrrrr@{}}
+    \toprule
+    \bfseries Klasse & \bfseries Precision & \bfseries Recall & \bfseries $\text{mAP}_{50}$ & \bfseries $\text{mAP}_{50-95}$ \\
+    \midrule
+    \texttt{player}     & $96{,}7\,\%$ & $95{,}8\,\%$ & $97{,}7\,\%$ & $66{,}7\,\%$ \\
+    \texttt{goalkeeper} & $92{,}1\,\%$ & $88{,}9\,\%$ & $92{,}4\,\%$ & $60{,}8\,\%$ \\
+    \texttt{referee}    & $89{,}2\,\%$ & $64{,}9\,\%$ & $80{,}2\,\%$ & $46{,}5\,\%$ \\
+    \texttt{ball}       & $68{,}3\,\%$ & $11{,}4\,\%$ & $13{,}0\,\%$ & $4{,}0\,\%$ \\
+    \midrule
+   \bfseries Gesamt (alle Klassen) & $\mathbf{86{,}6\,\%}$ & $\mathbf{65{,}2\,\%}$ & $\mathbf{70{,}8\,\%}$ & $\mathbf{44{,}5\,\%}$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
 \section{Fazit und Ausblick}
 
 Was ist fertig, was fehlt, und was wären die nächsten sinnvollen Schritte?
