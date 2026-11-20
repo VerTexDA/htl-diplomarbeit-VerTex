@@ -15,7 +15,7 @@ Der Soll-Ist-Abgleich in Tab.~\ref{tab:sollist} überprüft die quantitativen un
     \toprule
     \bfseries Anforderung & \bfseries Soll-Wert & \bfseries Ist-Wert \\
     \midrule
-    Detektions-Recall bei Verdeckung (Teilbereich B) & $\ge 80\,\%$ bei starken Zweikämpfen & $84{,}2\,\%$ (nach Fine-Tuning mit SAHI) \\
+    Detektions-Recall bei Verdeckung (Teilbereich B) & $\ge 80\,\%$ bei starken Zweikämpfen & $82{,}2\,\%$ Gesamt-Recall ($98{,}0\,\%$ \texttt{player}, $\text{mAP}_{50} = 86{,}3\,\%$ bei 1280p); 11$\times$ mehr Verdeckungspaare als Basismodell \\
     \addlinespace
     Genauigkeit der 2D-Homografie (Teilbereich A) & Mittlerer Messfehler $< 0{,}5\,\text{m}$ auf dem Spielfeld & $0{,}32\,\text{m}$ Abweichung an Referenzpunkten \\
     \addlinespace
@@ -50,7 +50,7 @@ Um den Shortcut zu beheben, wurde der Datensatz für Run~2 gezielt um 138 Aufnah
     \caption{Inferenz Run 2: Erfolgreiche Reklassifizierung des gelb gekleideten Spielers im Vordergrund als \texttt{player 0.78}.}\label{abb:eval-run2}
 \end{figure}
 
-Wie in Abb.~\ref{abb:eval-run2} ersichtlich, konnte das Modell durch diese Datensatz-Kuration entkoppelt werden: Der zuvor als Schiedsrichter detektierte Feldspieler wird über den gesamten Videoverlauf stabil als \texttt{player} (Konfidenz 0{,}64 bis 0{,}88, im abgebildeten Frame \texttt{player 0.78}) klassifiziert. Vereinzelte Verwechslungen an den äußeren Bildrändern belegen jedoch, dass für atypische Perspektiven künftig weiteres Datenmaterial sowie spatiale Filterregeln integriert werden müssen.
+Wie in Abb.~\ref{abb:eval-run2} ersichtlich, konnte das Modell durch diese Datensatz-Kuration entkoppelt werden: Der zuvor als Schiedsrichter detektierte Feldspieler wird über den gesamten Videoverlauf stabil als \texttt{player} (Konfidenz 0,64 bis 0,88, im abgebildeten Frame \texttt{player 0.78}) klassifiziert. Vereinzelte Verwechslungen an den äußeren Bildrändern belegen jedoch, dass für atypische Perspektiven künftig weiteres Datenmaterial sowie spatiale Filterregeln integriert werden müssen.
 
 Tab.~\ref{tab:eval-run2-metrics} zeigt die quantitativen Validierungsmetriken des überarbeiteten Modells (Run~2) nach 50 Epochen. Während die Hauptklassen \texttt{player} ($\text{mAP}_{50} = 97{,}7\,\%$) und \texttt{goalkeeper} ($\text{mAP}_{50} = 92{,}4\,\%$) eine sehr hohe Erkennungsrate aufweisen, fällt der Recall der Klasse \texttt{ball} bei einer Trainingsauflösung von $640\times640$ Pixeln mit $11{,}4\,\%$ noch gering aus. Dies bestätigt technisch die in Abschnitt~4.3.3 und 4.3.4 getroffene Entscheidung, für weit entfernte Kleinstobjekte im Panoramabild auf höhere Eingangsauflösungen (\texttt{imgsz=1280}) sowie \ac{SAHI} zu skalieren.
 
@@ -67,11 +67,93 @@ Tab.~\ref{tab:eval-run2-metrics} zeigt die quantitativen Validierungsmetriken de
     \texttt{referee}    & $89{,}2\,\%$ & $64{,}9\,\%$ & $80{,}2\,\%$ & $46{,}5\,\%$ \\
     \texttt{ball}       & $68{,}3\,\%$ & $11{,}4\,\%$ & $13{,}0\,\%$ & $4{,}0\,\%$ \\
     \midrule
-   \bfseries Gesamt (alle Klassen) & $\mathbf{86{,}6\,\%}$ & $\mathbf{65{,}2\,\%}$ & $\mathbf{70{,}8\,\%}$ & $\mathbf{44{,}5\,\%}$ \\
+    \bfseries Gesamt (alle Klassen) & $\mathbf{86{,}6\,\%}$ & $\mathbf{65{,}2\,\%}$ & $\mathbf{70{,}8\,\%}$ & $\mathbf{44{,}5\,\%}$ \\
     \bottomrule
   \end{tabular}
 \end{table}
 
+\section{Evaluierung der hochauflösenden Detektionspipeline (1280p)}
+\abschnittsautor{M. Ishak}
+
+\subsection{Skalierung auf hochauflösende Eingabedaten (Run 3 und Run 4)}
+
+Um die in Run~2 beobachtete Schwäche bei der Ball-Erkennung ($\text{mAP}_{50} = 13{,}0\,\%$ bei \texttt{imgsz=640}) gezielt zu beheben, wurden in der WSL2-Trainingsumgebung zwei vergleichende Trainingsläufe über jeweils 50~Epochen auf der NVIDIA~RTX~3080 durchgeführt: Run~3 mit einer Eingangsauflösung von \texttt{imgsz=640} (\texttt{batch=16}, Trainingsdauer 2,6~Minuten) sowie Run~4 mit \texttt{imgsz=1280} (\texttt{batch=8}, \texttt{cache="ram"}, Trainingsdauer 11,8~Minuten). Tab.~\ref{tab:vergleich-640-1280} stellt die klassenspezifischen Validierungsmetriken beider Läufe gegenüber.
+
+\begin{table}[htbp]
+  \caption{Vergleich der Validierungsmetriken zwischen \texttt{imgsz=640} (Run~3) und \texttt{imgsz=1280} (Run~4) über 50~Epochen}
+  \label{tab:vergleich-640-1280}
+  \centering
+  \begin{tabular}{@{}lrrrr@{}}
+    \toprule
+    \bfseries Klasse & \bfseries $\text{mAP}_{50}$ (640p) & \bfseries $\text{mAP}_{50}$ (1280p) & \bfseries $\text{mAP}_{50-95}$ (1280p) & \bfseries Recall (1280p) \\
+    \midrule
+    \texttt{player}     & $97{,}8\,\%$ & $99{,}2\,\%$ & $81{,}3\,\%$ & $98{,}0\,\%$ \\
+    \texttt{goalkeeper} & $86{,}9\,\%$ & $97{,}9\,\%$ & $79{,}0\,\%$ & $95{,}3\,\%$ \\
+    \texttt{referee}    & $82{,}3\,\%$ & $95{,}8\,\%$ & $67{,}7\,\%$ & $89{,}9\,\%$ \\
+    \texttt{ball}       & $15{,}1\,\%$ & $52{,}3\,\%$ & $27{,}1\,\%$ & $45{,}7\,\%$ \\
+    \midrule
+    \bfseries Gesamt (alle Klassen) & $\mathbf{70{,}5\,\%}$ & $\mathbf{86{,}3\,\%}$ & $\mathbf{63{,}8\,\%}$ & $\mathbf{82{,}2\,\%}$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Durch die Vervierfachung der Eingangs-Pixelanzahl stieg der $\text{mAP}_{50}$-Wert der Klasse \texttt{ball} von $15{,}1\,\%$ auf $52{,}3\,\%$ ($+37{,}2$~Prozentpunkte), während sich der Recall mehr als verdreifachte (von $14{,}3\,\%$ auf $45{,}7\,\%$). Über alle vier Zielklassen hinweg erhöhte sich die Lokalisierungsgenauigkeit ($\text{mAP}_{50-95}$) von $43{,}6\,\%$ auf $63{,}8\,\%$ (Bestwert in Epoche~47), bei einer Inferenzzeit von $3{,}6\,\text{ms}$ pro Bild auf der RTX~3080.
+
+Die technische Ursache für diesen Sprung lässt sich anhand der Objektgrößen im realen 1080p-Spielmaterial (22-sekündiger Veo-Clip, 660~Frames bei 29,97~FPS) quantifizieren (siehe Abb.~\ref{abb:detektionsqualitaet}). Während die Klasse \texttt{player} eine mediane Bounding-Box-Fläche von $1.727{,}8\,\text{px}^2$ (Median-Konfidenz 0,792) aufweist, nimmt die Klasse \texttt{ball} lediglich eine mediane Fläche von $220{,}3\,\text{px}^2$ ein (Faktor~7,84 kleiner, entsprechend rund $15 \times 15\,\text{px}$). Bei einer Herunterskalierung auf 640~Pixel schrumpft der Ball auf unter $5 \times 5\,\text{px}$ und geht in den Downsampling-Schichten des Backbones weitgehend verloren, wohingegen bei 1280~Pixeln ausreichend Bildinformationen (ca.\ $10 \times 10\,\text{px}$) erhalten bleiben.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{images/detection_quality_eval.pdf}
+  \caption{Konfidenzverteilung (links) und mediane Bounding-Box-Fläche auf logarithmischer Skala (rechts) nach Objektklasse auf dem 1080p-Veo-Testvideo (660~Frames, 1280p-Modell).}\label{abb:detektionsqualitaet}
+\end{figure}
+
+\subsection{Vergleich Basismodell vs. Fine-Tuning und Ball-Kontinuität}
+
+Zur direkten Beantwortung der zugrunde liegenden Forschungsfrage wurde das ungetunte \ac{COCO}-Basismodell (\texttt{yolov8n.pt}, \texttt{imgsz=640}, \texttt{iou=0.45}, \texttt{agnostic\_nms=False}) dem feingetunten VerTeX-Modell (\texttt{best.pt}, \texttt{imgsz=1280}, \texttt{iou=0.55}, \texttt{agnostic\_nms=True}) auf 220 gleichmäßig abgetasteten Frames (\texttt{stride=3}) des Veo-Testvideos gegenübergestellt. Die Messungen erfolgten auf dem Apple~M1~Pro über die \ac{MPS}-Schnittstelle. Tab.~\ref{tab:benchmark-basis-ft} sowie Abb.~\ref{abb:baseline-vergleich} fassen die Ergebnisse zusammen.
+
+\begin{table}[htbp]
+  \caption{Benchmark-Vergleich zwischen ungetuntem COCO-Basismodell (640p) und feingetuntem VerTeX-Modell (1280p) auf 220~Frames des Veo-Testvideos (Apple~M1~Pro, \ac{MPS})}
+  \label{tab:benchmark-basis-ft}
+  \centering
+  \begin{tabular}{@{}lrr@{}}
+    \toprule
+    \bfseries Metrik & \bfseries Basismodell (COCO 640p) & \bfseries VerTeX Fine-Tuned (1280p) \\
+    \midrule
+    Mittlere Personen pro Frame (gesamt)            & $11{,}59$ & $16{,}27$ ($+40{,}4\,\%$) \\
+    Mittlere Personen im Fernbereich (obere Hälfte) & $8{,}36$  & $13{,}28$ ($+58{,}9\,\%$) \\
+    Erkannte Verdeckungspaare ($\text{IoU} \ge 0{,}25$) & $12$ ($0{,}05$/Frame) & $132$ ($0{,}60$/Frame, $11\times$) \\
+    Ball-Erkennungsrate (Einzelbild-Inferenz)       & $5{,}45\,\%$ & $46{,}82\,\%$ ($8{,}6\times$) \\
+    Mittlere Inferenzzeit (Latenz)                  & $13{,}08\,\text{ms}$ & $23{,}35\,\text{ms}$ \\
+    Durchsatz (Bildrate)                            & $76{,}43\,\text{FPS}$ & $42{,}83\,\text{FPS}$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Das feingetunte 1280p-Modell detektierte im Mittel 16,27~Personen pro Frame gegenüber 11,59 im Basismodell ($+40{,}4\,\%$), wobei der Zugewinn im entfernten oberen Bildbereich mit $+58{,}9\,\%$ (13,28 statt 8,36~Personen) besonders deutlich ausfiel. Bei dichter Spielerverdeckung ($\text{IoU} \ge 0{,}25$) erkannte das angepasste Modell 132 überlappende Spielerpaare gegenüber lediglich 12 im ungetunten Basismodell (Faktor~11). Die visuelle Gegenüberstellung eines stark frequentierten Zweikampf-Frames in Abb.~\ref{abb:occlusion-vergleich} belegt diesen Effekt: Während das Basismodell mehrere teilweise verdeckte und weit entfernte Akteure übersieht, bleiben diese im feingetunten Modell stabil getrennt. Der Anstieg der mittleren Inferenzzeit von $13{,}08\,\text{ms}$ auf $23{,}35\,\text{ms}$ ist moderat; mit 42,83~FPS bleibt die Inferenz auch auf mobiler Hardware deutlich über dem Echtzeit-Kriterium von 30~FPS.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{images/baseline_vs_finetuned_eval.pdf}
+  \caption{Quantitativer Vergleich zwischen ungetuntem COCO-Basismodell (640p) und feingetuntem VerTeX-Modell (1280p) hinsichtlich Personendichte, Verdeckungserkennung und Ball-Quote.}\label{abb:baseline-vergleich}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{images/occlusion_comparison.png}
+  \caption{Visueller Vergleich bei dichter Spielerverdeckung: Ungetuntes COCO-Basismodell (links) gegenüber feingetuntem 1280p-Modell mit angepasster \ac{NMS}-Schwelle (rechts).}\label{abb:occlusion-vergleich}
+\end{figure}
+
+Ein wesentlicher Befund zeigt sich im Vergleich zwischen reiner Einzelbild-Detektion (\texttt{model.predict}) und integrierter Tracking-Pipeline (\texttt{model.track} mit ByteTrack): Während die Einzelbild-Inferenz den Ball in $46{,}82\,\%$ der Frames erfasst, sinkt die rohe Ball-Quote im ByteTrack-Export auf $25{,}30\,\%$ (167 von 660~Frames), da der personenorientierte Tracker sehr schnelle, nur kurzzeitig auftretende Ball-Detektionen mit geringer Konfidenz teilweise verwirft. Durch die nachgelagerte lineare Interpolation kurzer Aussetzer (bis maximal 15~Frames beziehungsweise ca.\ 0,5~Sekunden, kombiniert mit einer Sprungweiten-Plausibilitätsprüfung) wurden 63 fehlende Ball-Positionen rekonstruiert, wodurch die zeitliche Ball-Verfügbarkeit von $25{,}30\,\%$ auf $34{,}85\,\%$ ($+9{,}55$~Prozentpunkte beziehungsweise $+37{,}7\,\%$ relativ) gesteigert werden konnte (siehe Abb.~\ref{abb:ball-kontinuitaet}).
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{images/ball_continuity_eval.pdf}
+  \caption{Zeitlicher Verlauf der Ball-Konfidenz über 22~Sekunden (660~Frames) sowie linear interpolierte Lücken (Roh: $25{,}3\,\%$, nach Interpolation: $34{,}9\,\%$).}\label{abb:ball-kontinuitaet}
+\end{figure}
+
+Als verbleibende Systemgrenzen der reinen Bildraum-Detektion wurden zwei Faktoren identifiziert: Zum einen führt der Domain~Shift zwischen Broadcast-Trainingsdaten und weitwinkligen Amateur-Taktikkameras (Veo) bei schnellen Pässen mit starkem Motion~Blur noch zu längeren Ball-Aussetzern oberhalb des 15-Frame-Fensters. Zum anderen werden vereinzelt Personen außerhalb des Spielfelds (Trainer und Zuschauer entlang der Seitenlinie) als Spieler klassifiziert, da das Detektionsmodell ohne geometrische Spielfeldkenntnis arbeitet. Diese Fehlklassifikationen werden erst durch die nachgelagerte 2D-Spielfeldmaskierung in Teilbereich~A zuverlässig herausgefiltert.
+
 \section{Fazit und Ausblick}
+\abschnittsautor{\alleautoren}
 
 Was ist fertig, was fehlt, und was wären die nächsten sinnvollen Schritte?

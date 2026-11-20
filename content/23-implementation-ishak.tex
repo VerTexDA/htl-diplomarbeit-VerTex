@@ -88,6 +88,15 @@ Netz werden auf einem dedizierten Windows-PC mit einem AMD Ryzen 7 7700X Prozess
 32\,GB DDR5-Arbeitsspeicher und einer NVIDIA GeForce RTX 3080 Grafikkarte durchgeführt. Die hohe Anzahl an 
 CUDA-Cores und der 10\,GB große \ac{VRAM} dieser GPU reduzieren die Trainingsdauer signifikant.
 
+Beim nativen Training unter Windows trat auf dem eingesetzten AMD-Zen-4-Prozessor (Ryzen~7~7700X) in der 
+PyTorch-Bibliothek \texttt{torch\_cpu.dll} jedoch ein reproduzierbarer AVX-512-Instruktionsfehler 
+(\texttt{0xc000001d}) während der Verlustberechnung auf. Zur dauerhaften Behebung wurde die 
+Trainingspipeline in das Windows Subsystem for Linux~2 (WSL2, Ubuntu auf nativem \texttt{ext4}-Dateisystem) 
+mit Python~3.11, PyTorch~2.6.0 und CUDA~12.4 bei direktem GPU-Passthrough auf die NVIDIA~RTX~3080 migriert. 
+Durch das native Linux-Dateisystem sowie den Einsatz von \texttt{workers=4} und \texttt{cache="ram"} 
+konnte neben voller Laufzeitstabilität auch ein deutlich höherer I/O-Durchsatz beim Laden der Trainingsdaten 
+erzielt werden.
+
 Die Synchronisation des Quellcodes und der Dokumentation im Team erfolgt über die Versionsverwaltung Git 
 und die Plattform GitHub. Während die schriftliche Dokumentation in einem gemeinsamen Team-Repository 
 gepflegt wird, wurde für das Training der \ac{KI} ein separates, privates GitHub-Repository eingerichtet. 
@@ -104,7 +113,7 @@ unerlässlich ist~-- und der Speicherkapazität (\ac{VRAM}) der lokal verwendete
 
 Das Fine-Tuning wurde initial über 50 Epochen angesetzt. Da das zu analysierende Videomaterial über 
 zwei Smartphones aus knapp fünf Metern Höhe am Spielfeldrand in 4K-Auflösung aufgezeichnet wird, ist 
-ie Wahl der Eingangsauflösung (\texttt{imgsz}) kritisch. Während erste Trainingsläufe zur 
+die Wahl der Eingangsauflösung (\texttt{imgsz}) kritisch. Während erste Trainingsläufe zur 
 Pipeline-Verifikation auf 640 Pixel normiert wurden, erfordern die feinen Details des 
 Panoramabildes in den weiterführenden Trainingsläufen höhere Auflösungen von bis zu 1280 
 Pixeln. Tab.~\ref{tab:hyperparameter} zeigt die zentralen Konfigurationsparameter des 
@@ -180,6 +189,12 @@ inferiert jede Kachel separat in voller Auflösung, bevor die erkannten Bounding
 Greedy-Non-Maximum-Merging-Verfahren wieder zum Gesamtbild zusammengefügt werden. Diese Methode 
 steigert die Erkennungsrate (Recall) bei kleinen und teilweise verdeckten Spielern massiv, ohne 
 dass das Modelltraining auf unrealistisch hohe Auflösungen skaliert werden muss.
+Um zusätzlich kurzzeitige Aussetzer der Ball-Detektion bei schnellen Pässen (Motion Blur) oder temporärer 
+Vollverdeckung durch Spieler zu kompensieren, wurde ein zeitliches Post-Processing-Modul 
+(\texttt{clean\_and\_interpolate.py}) integriert. Erkennungs-Lücken zwischen zwei validen 
+Ball-Detektionen werden bis zu einer maximalen Dauer von 15~Frames ($\approx 0{,}5$\,s bei 30\,FPS) 
+linear interpoliert, sofern die euklidische Pixel-Distanz zwischen Start- und Endposition einen 
+plausiblen Bewegungsschwellenwert nicht überschreitet.
 
 \subsection{Entwicklung der Datenschnittstelle (JSON-Export)}
 
