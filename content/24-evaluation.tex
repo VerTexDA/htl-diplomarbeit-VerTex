@@ -153,6 +153,152 @@ Ein wesentlicher Befund zeigt sich im Vergleich zwischen reiner Einzelbild-Detek
 
 Als verbleibende Systemgrenzen der reinen Bildraum-Detektion wurden zwei Faktoren identifiziert: Zum einen führt der Domain~Shift zwischen Broadcast-Trainingsdaten und weitwinkligen Amateur-Taktikkameras (Veo) bei schnellen Pässen mit starkem Motion~Blur noch zu längeren Ball-Aussetzern oberhalb des 15-Frame-Fensters. Zum anderen werden vereinzelt Personen außerhalb des Spielfelds (Trainer und Zuschauer entlang der Seitenlinie) als Spieler klassifiziert, da das Detektionsmodell ohne geometrische Spielfeldkenntnis arbeitet. Diese Fehlklassifikationen werden erst durch die nachgelagerte 2D-Spielfeldmaskierung in Teilbereich~A zuverlässig herausgefiltert.
 
+\clearpage
+\section{Prüfung der Feldpositionen und der geschätzten Laufwege}
+\abschnittsautor{E. Akpinar}
+\label{sec:em-eval}
+
+Für die Prüfung wurden Versuche mit unterschiedlichen Fragestellungen herangezogen. Die Hütchen liefern bekannte Orte auf dem Boden. Bei zwei geraden Läufen liegt zusätzlich ein mit dem Maßband bestimmter Abstand zwischen Start und Ziel vor. Beim diagonalen Lauf und bei den Versuchen mit mehreren Personen liegt der Schwerpunkt auf den Stellen, an denen Messwerte fehlen oder eine Spur ihre Kennnummer wechseln kann. Die folgenden Zahlen beziehen sich jeweils auf den bezeichneten gespeicherten Lauf. Gleichnamige Videos können nach einem erneuten Schnitt eine andere Zeitachse besitzen.
+
+\subsection{Kontrollabstände im Inneren des Rasters}
+Für die Abstandsprüfung wurden nur Hütchen herangezogen, die bei der Berechnung der Homographie aus den vier Ecken unbeteiligt bleiben. Ausgangspunkt ist die mittlere Markierung. Von dort beträgt der gemessene Abstand zu den vier benachbarten Hütchen jeweils fünf Meter. Für jedes geeignete Bild wurden beide Enden einer Verbindung aus den gespeicherten Bildtreffern in Meter umgerechnet. Fehlte einer der beiden Punkte, entfiel die entsprechende Verbindung für diesen Zeitpunkt.
+
+Aus den verfügbaren Einzelwerten wurde je Richtung der Median bestimmt. Dazu werden die Werte nach Größe geordnet und die Mitte der geordneten Reihe ermittelt. Der kleinste und der größte Wert zeigen ergänzend, wie weit die Ergebnisse im selben Video auseinanderliegen. Eine kleine Spannweite bedeutet zunächst, dass die Markierungen in aufeinanderfolgenden Bildern ähnlich gefunden wurden. Ein gleichbleibend versetzter Bildpunkt kann trotzdem bei jeder Wiederholung einen ähnlichen Abstand liefern.
+
+Siehe Tab.~\ref{tab:em-abstaende}.
+\begin{table}[htbp]\centering\caption{Strecken ab dem mittleren Hütchen (eigene Kontrollauswertung, 13. November)}\label{tab:em-abstaende}
+\begin{tabular}{@{}lllll@{}}\toprule Video & Ziel & Bildpaare & Median in m & Min.–Max. in m\\\midrule
+gehen & mitte links & 48 & 4,89 & 4,87–4,92\\
+gehen & mitte rechts & 48 & 5,18 & 5,15–5,18\\
+gehen & vorne mitte & 48 & 5,35 & 5,33–5,36\\
+gehen & hinten mitte & 48 & 5,14 & 5,13–5,18\\
+joggen & mitte links & 41 & 4,89 & 4,87–4,92\\
+joggen & mitte rechts & 41 & 5,17 & 5,14–5,20\\
+joggen & vorne mitte & 41 & 5,36 & 5,31–5,42\\
+joggen & hinten mitte & 41 & 5,15 & 5,04–5,23\\\bottomrule\end{tabular}\end{table}
+In beiden Aufnahmen ist die Verbindung nach links kürzer als fünf Meter. Die größten positiven Abweichungen treten in Richtung der vorderen Mitte auf. Beim Gehen liegt ihr Median rund 35 Zentimeter über dem gemessenen Abstand. Die ähnliche Reihenfolge in beiden Aufnahmen spricht dafür, die gemeinsamen Bestandteile des Aufbaus weiter zu untersuchen. Dazu gehören die Wahl der Bodenpunkte und die perspektivische Abbildung. Aus diesem Vergleich allein lässt sich der Fehler keinem bestimmten Hütchen zuordnen.
+
+\subsection{Gehen und Joggen zwischen denselben Bodenmarkierungen}
+Als Referenz dient der mit dem Maßband bestimmte Abstand von fünf Metern. In den gespeicherten Auswertungen vom 13. November liegt für beide Bewegungsarten jeweils ein zusammenhängender Abschnitt vor. Beim Gehen umfasst er 55 Zeitpunkte, beim Joggen 46. Die Auswertung verwendet den gesamten erfassten Abschnitt. Anfang und Ende wurden bei der Berechnung nicht nachträglich so gewählt, dass die Summe näher an fünf Metern liegt.
+
+Für den Vergleich werden drei Werte unterschieden. Der Rohweg summiert die Abstände zwischen den unmittelbar ermittelten Positionen. Der ausgewiesene Weg enthält die Glättung und die Mindestbewegung von zehn Zentimetern. Die Referenz ist der unabhängig davon vermessene Abstand der beiden Bodenmarkierungen. Eine seitliche Bewegung der Person sowie die Lage ihres geschätzten Bodenpunkts am Start und am Ziel können den Vergleich beeinflussen.
+
+Siehe Tab.~\ref{tab:em-gerade}.
+\begin{table}[htbp]\centering\caption{Ergebnisse der beiden Fünf-Meter-Versuche (eigene Berichte, Version 2 vom 13. November)}\label{tab:em-gerade}
+\begin{tabular}{@{}lllll@{}}\toprule Versuch & Dauer in s & Rohweg in m & Ausgabe in m & Differenz in m\\\midrule
+Gehen & 5,34 & 6,656 & 5,316 & +0,316\\
+Joggen & 4,47 & 6,236 & 5,382 & +0,382\\\bottomrule\end{tabular}\end{table}
+
+Abb.~\ref{abb:em-fortschritt} zeigt die gezählte Strecke während der zwei geraden Läufe.
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}\begin{axis}[width=.89\linewidth,height=6.2cm,grid=major,xlabel={Videozeit in Sekunden},ylabel={Streckensumme in Metern},legend style={font=\small},legend pos=north west,]
+\addplot+[mark=none,thick] coordinates {(0.000,0.000) (0.100,0.000) (0.200,0.000) (0.300,0.000) (0.400,0.105) (0.500,0.105) (0.600,0.211) (0.700,0.211) (0.800,0.321) (0.900,0.321) (1.000,0.462) (1.100,0.462) (1.200,0.646) (1.300,0.757) (1.400,0.884) (1.500,1.016) (1.600,1.148) (1.700,1.274) (1.800,1.394) (1.900,1.514) (2.002,1.650) (2.102,1.791) (2.202,1.943) (2.302,2.086) (2.402,2.225) (2.502,2.363) (2.602,2.507) (2.702,2.643) (2.802,2.778) (2.902,2.907) (3.002,3.032) (3.102,3.159) (3.202,3.297) (3.302,3.436) (3.402,3.563) (3.502,3.690) (3.602,3.815) (3.702,3.940) (3.802,4.069) (3.902,4.199) (4.002,4.332) (4.102,4.466) (4.202,4.591) (4.302,4.719) (4.403,4.829) (4.503,4.939) (4.603,4.939) (4.703,5.099) (4.803,5.099) (4.903,5.210) (5.003,5.210) (5.103,5.210) (5.203,5.316) (5.303,5.316) (5.337,5.316)};
+\addlegendentry{Gehen}
+\addplot+[mark=none,thick] coordinates {(0.000,0.000) (0.100,0.000) (0.200,0.000) (0.300,0.000) (0.400,0.000) (0.502,0.000) (0.602,0.000) (0.702,0.000) (0.802,0.107) (0.902,0.107) (1.002,0.107) (1.102,0.225) (1.202,0.225) (1.302,0.354) (1.402,0.354) (1.502,0.557) (1.602,0.681) (1.702,0.824) (1.802,0.990) (1.902,1.165) (2.002,1.351) (2.102,1.549) (2.202,1.756) (2.302,1.948) (2.402,2.147) (2.502,2.357) (2.602,2.591) (2.702,2.801) (2.802,3.005) (2.903,3.214) (3.003,3.432) (3.103,3.636) (3.203,3.844) (3.303,4.057) (3.403,4.281) (3.503,4.475) (3.603,4.664) (3.703,4.845) (3.803,5.014) (3.903,5.152) (4.003,5.257) (4.103,5.257) (4.203,5.382) (4.303,5.382) (4.403,5.382) (4.470,5.382)};
+\addlegendentry{Joggen}
+\end{axis}\end{tikzpicture}
+\caption{die gezählte Strecke während der zwei geraden Läufe (eigene Darstellung)}\label{abb:em-fortschritt}\end{figure}
+Bezogen auf den Markierungsabstand beträgt die Differenz beim Gehen rund 6,3 Prozent und beim Joggen rund 7,6 Prozent. Dass der ruhigere Gehversuch die größere Rohsumme aufweist, zeigt die Bedeutung der einzelnen Positionsänderungen. Aus zwei Durchgängen folgt jedoch keine allgemeine Rangfolge zwischen Gehen und Joggen. Für eine Aussage zur Wiederholbarkeit wären weitere unabhängig aufgenommene Durchgänge erforderlich.
+
+\subsection{Vergleich zweier Näherungen für den Bodenpunkt}
+Die Mitte der unteren Kastenkante lässt sich bei jeder gültigen Erkennung bestimmen. Als Alternative wurde aus zwei erkannten Knöcheln deren Mittelpunkt gebildet. Untersucht wurde, ob die zusätzlichen Körperpunkte bei den geraden Versuchen zu einem günstigeren Verlauf führen. Ein Knöchel beschreibt einen Punkt am Körper oberhalb der Bodenfläche. Während einer Schrittfolge wechselt außerdem die Höhe der Füße. Es ist daher offen, ob die zusätzliche Information den Fehler bei der Umrechnung tatsächlich verringert.
+
+Die gespeicherte Pose-Auswertung vom 13. November enthält für beide Videos eine zusammenhängende Spur. Beim Gehen ergibt sich mit den Knöcheln eine Schätzung von 5,769 Metern, beim Joggen von 6,118 Metern. Für dieselben Versuche liegen die Werte der Kastenkante jeweils näher am Markierungsabstand. Die Rohsummen der Knöchelspur liegen in beiden Fällen nahe zehn Metern. Das Ergebnis spricht gegen eine Übernahme dieses Versuchs als Standard für die untersuchten Aufnahmen. Ob ein anderer Bodenkontaktpunkt unter anderen Aufnahmebedingungen geeigneter ist, bleibt offen.
+
+Siehe Tab.~\ref{tab:em-pose}.
+\begin{table}[htbp]\centering\caption{Auswirkung der Wahl des Bodenpunkts (eigener Methodenvergleich vom 13. November)}\label{tab:em-pose}
+\begin{tabular}{@{}lllll@{}}\toprule Bestimmung & Gehen roh & Gehen geglättet & Joggen roh & Joggen geglättet\\\midrule
+Kastenunterkante & 6,656 m & 5,316 m & 6,236 m & 5,382 m\\
+Mitte der Knöchel & 9,927 m & 5,769 m & 9,862 m & 6,118 m\\\bottomrule\end{tabular}\end{table}
+
+
+\subsection{Vergleich der beiden Verfahren zur Feldfreigabe}
+Das Kreisvideo vom 13. November wurde vor und nach der Erweiterung um die Übertragung des Referenzfeldes ausgewertet. Der Vergleich enthält für beide Ausgaben dieselben 91 Zeitpunkte. Dadurch kann zuerst untersucht werden, ob sich die bereits brauchbaren Werte verändert haben. Danach lässt sich getrennt feststellen, welche vorher fehlenden Positionen hinzugekommen sind. Bei einem Vergleich zweier verschiedener Videos wäre diese Trennung nicht möglich.
+
+Mit der Anforderung von vier direkt verwendbaren Ecken standen für 70 Zeitpunkte Positionen zur Verfügung. Mit der geprüften Übertragung wurden weitere 20 Positionen übernommen. Für die bereits vorhandenen Positionen weist der Vergleich eine maximale Änderung von null Metern aus. Die neue Methode ergänzt in diesem konkreten Lauf also zuvor fehlende Beobachtungen. Die Wegsumme über die verfügbaren Abschnitte wächst von rund 17,18 auf 21,21 Meter. Das Feld kann länger verfolgt werden. Welche Strecke die Person im Kreis tatsächlich zurückgelegt hat, wurde bei diesem Versuch nicht unabhängig vermessen.
+
+Siehe Tab.~\ref{tab:em-transfer}.
+\begin{table}[htbp]\centering\caption{Gegenüberstellung der Feldfreigabe (eigener Vergleich vom 13. November)}\label{tab:em-transfer}
+\begin{tabular}{@{}lllll@{}}\toprule Aufnahme & Zeitpunkte & Vier Ecken & Mit Übertragung & Zusätzlich\\\midrule
+Kreis & 91 & 70 & 90 & 20\\
+Gehen & 55 & 55 & 55 & 0\\
+Joggen & 46 & 46 & 46 & 0\\\bottomrule\end{tabular}\end{table}
+Die beiden geraden Läufe erfüllen eine zweite Aufgabe im Vergleich. Ihre Positionen waren schon vor der Erweiterung vollständig. Für beide Läufe weist die gespeicherte Gegenüberstellung weder zusätzliche Messpunkte noch eine Änderung der vorhandenen Koordinaten aus. Die beobachtete Verbesserung der Abdeckung im Kreisvideo wurde somit in diesen zwei Vergleichsläufen ohne Verschiebung der vorhandenen Daten erreicht. Ob das auch bei einer größeren Kameraänderung gilt, wurde damit nicht geprüft.
+
+\subsection{Fehlende Messungen beim diagonalen Joggen}
+Der diagonale Lauf vom 13. November umfasst 65 geprüfte Zeitpunkte. Für 61 ist eine Position verfügbar. Vier Unterbrechungen teilen die Spur in fünf Abschnitte. In mehreren Fällen liegt der größte Kontrollfehler nur knapp über der eingestellten Grenze. Die Entscheidung wird anhand des ungerundeten Werts getroffen. Deshalb kann ein auf zwei Nachkommastellen gerundeter Berichtswert von 0,50 Metern bereits zu einer Ablehnung gehören.
+
+Die Folge der Unterbrechungen ist in der Draufsicht sichtbar. Jede durchgezogene Linie gehört zu einem durchgehend beobachteten Abschnitt. Über eine Lücke hinweg wird keine Strecke zur beobachteten Summe addiert. Die Farben unterscheiden hier Abschnitte derselben Spur. Sie stehen nicht für fünf verschiedene Läufer.
+
+Abb.~\ref{abb:em-diagonal} zeigt die fünf beobachteten Abschnitte des Diagonallaufs.
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}\begin{axis}[width=.89\linewidth,height=6.2cm,grid=major,xlabel={X in Metern},ylabel={Y in Metern},legend style={font=\small},legend pos=north west,axis equal image]
+\addplot+[thick,mark=* ,mark size=0.9pt] coordinates {(0.308,0.154) (0.308,0.177) (0.307,0.201) (0.312,0.215) (0.312,0.252) (0.283,0.301) (0.286,0.344) (0.290,0.400) (0.291,0.468) (0.292,0.536)};
+\addplot+[thick,mark=* ,mark size=0.9pt] coordinates {(0.369,0.458) (0.468,0.652) (0.567,0.847) (0.658,1.006) (0.801,1.230) (0.930,1.395) (1.055,1.525) (1.190,1.710) (1.324,1.883) (1.458,2.056)};
+\addplot+[thick,mark=* ,mark size=0.9pt] coordinates {(1.854,2.641) (2.031,2.872) (2.209,3.102) (2.370,3.362) (2.540,3.627) (2.729,3.849) (2.910,4.062) (3.107,4.336) (3.321,4.583) (3.556,4.744) (3.765,4.929) (3.975,5.141) (4.183,5.330) (4.396,5.492) (4.591,5.671) (4.799,5.880) (5.018,6.141) (5.241,6.376) (5.447,6.644) (5.664,6.949) (5.881,7.206) (6.088,7.393) (6.294,7.580)};
+\addplot+[thick,mark=* ,mark size=0.9pt] coordinates {(6.782,7.947) (6.995,8.033) (7.207,8.119) (7.420,8.204)};
+\addplot+[thick,mark=* ,mark size=0.9pt] coordinates {(7.826,8.658) (8.001,8.710) (8.176,8.762) (8.357,8.836) (8.527,8.936) (8.693,9.070) (8.845,9.197) (8.985,9.285) (9.109,9.372) (9.220,9.473) (9.314,9.543) (9.410,9.673) (9.499,9.784) (9.528,9.821)};
+\end{axis}\end{tikzpicture}
+\caption{die fünf beobachteten Abschnitte des Diagonallaufs (eigene Darstellung)}\label{abb:em-diagonal}\end{figure}
+
+Siehe Tab.~\ref{tab:em-diagonal}.
+\begin{table}[htbp]\centering\caption{Teilwege der Spur 1 (eigener Diagonalbericht, 13. November, 16:09 Uhr)}\label{tab:em-diagonal}
+\begin{tabular}{@{}lllll@{}}\toprule Abschnitt & Beginn in s & Ende in s & Punkte & Beobachtet in m\\\midrule
+1 & 0,00 & 0,90 & 10 & 0,316\\
+2 & 1,10 & 2,00 & 10 & 1,942\\
+3 & 2,20 & 4,40 & 23 & 6,678\\
+4 & 4,60 & 4,90 & 4 & 0,688\\
+5 & 5,10 & 6,34 & 14 & 2,057\\\bottomrule\end{tabular}\end{table}
+Die Summe der beobachteten Abschnitte beträgt 11,682 Meter. Ein pauschaler Vergleich mit der Diagonale des zehn mal zehn Meter großen Feldes wäre unbegründet. Für längere Strecken wurden andere Bodenmarkierungen verwendet. Außerdem fehlt hier ein Teil des Wegs zwischen den Messabschnitten. Eine Erhöhung der Kontrollgrenze würde mehr Werte zulassen, aber keine zusätzliche Information darüber liefern, ob jene Positionen richtig waren.
+
+
+\subsection{Entscheidungen an der Grenze der Feldfreigabe}
+Beim Diagonallauf lässt sich für jede der vier Unterbrechungen der größte verbliebene Kontrollfehler betrachten. Die folgende Darstellung zeigt den Verlauf über die gesamte Aufnahme. Die waagrechte Linie kennzeichnet die im Programm eingestellte Grenze. Ein Ausschlag darüber wird unabhängig davon behandelt, wie gut ein Spieler im selben Bild erkennbar war. Dadurch bleiben zwei verschiedene Fehlerursachen im Bericht unterscheidbar.
+
+In der Nähe von einer Sekunde ist der Unterschied zur Grenze besonders klein. Bei rund 2,1 Sekunden ist die Übertragung wegen einer Überschreitung der Grenze abgelehnt worden. Der Bericht enthält dort keinen Zahlenwert. Die Entscheidung beruht in beiden Fällen auf derselben Regel. Ein weiterer Blick auf die unmittelbar benachbarten Zeitpunkte hilft bei der Sichtprüfung: Sie geben an, wie lange eine Auffälligkeit besteht und wo im Kontrollbild der Vergleich mit dem Hütchen begonnen werden sollte.
+
+Abb.~\ref{abb:em-grenze} zeigt den größten Kontrollfehler im Diagonallauf.
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}\begin{axis}[width=.89\linewidth,height=6.2cm,grid=major,xlabel={Videozeit in Sekunden},ylabel={Kontrollfehler in Metern},legend style={font=\small},legend pos=north west,]
+\addplot+[only marks,mark=*,mark size=0.8pt] coordinates {(0.000,0.453) (0.100,0.448) (0.200,0.439) (0.300,0.392) (0.400,0.442) (0.502,0.447) (0.602,0.458) (0.702,0.387) (0.802,0.390) (0.902,0.444) (1.002,0.502) (1.102,0.394) (1.202,0.409) (1.302,0.445) (1.402,0.398) (1.502,0.448) (1.602,0.446) (1.702,0.436) (1.802,0.331) (1.902,0.387) (2.002,0.387) (2.202,0.499) (2.302,0.499) (2.402,0.384) (2.502,0.387) (2.602,0.337) (2.702,0.388) (2.802,0.392) (2.903,0.386) (3.003,0.448) (3.103,0.440) (3.203,0.390) (3.303,0.386) (3.403,0.391) (3.503,0.278) (3.603,0.291) (3.703,0.274) (3.803,0.295) (3.903,0.451) (4.003,0.390) (4.103,0.387) (4.203,0.386) (4.303,0.438) (4.403,0.387) (4.503,0.509) (4.603,0.340) (4.703,0.446) (4.803,0.383) (4.903,0.449) (5.003,0.511) (5.103,0.449) (5.203,0.455) (5.303,0.392) (5.405,0.442) (5.505,0.428) (5.605,0.386) (5.705,0.387) (5.805,0.394) (5.905,0.447) (6.005,0.438) (6.105,0.385) (6.205,0.444) (6.305,0.438) (6.338,0.439)};
+\addlegendentry{größter Fehler}
+\addplot+[dashed,mark=none] coordinates {(0.000,0.500) (6.338,0.500)};
+\addlegendentry{Freigabegrenze}
+\end{axis}\end{tikzpicture}
+\caption{den größten Kontrollfehler im Diagonallauf (eigene Darstellung)}\label{abb:em-grenze}\end{figure}
+
+Siehe Tab.~\ref{tab:em-ausfall}.
+\begin{table}[htbp]\centering\caption{Abgelehnte Zeitpunkte und direkt benachbarte Werte (eigener Diagonalbericht)}\label{tab:em-ausfall}
+\begin{tabular}{@{}llll@{}}\toprule Zeit in s & Fehler davor in m & Fehler am Zeitpunkt in m & Fehler danach in m\\\midrule
+1,00 & 0,444 & 0,502 & 0,394\\
+2,10 & 0,387 & nicht gespeichert & 0,499\\
+4,50 & 0,387 & 0,509 & 0,340\\
+5,00 & 0,449 & 0,511 & 0,449\\\bottomrule\end{tabular}\end{table}
+Die aufgezeichneten Werte erlauben es, die Entscheidung nachzurechnen. Sie liefern jedoch keinen unabhängigen Nachweis, ob der tatsächliche Bodenpunkt eines Spielers in genau diesem Bild unbrauchbar war. Die Grenze ist eine Vorsichtsmaßnahme bei widersprüchlichen Kontrollen. Eine Änderung wäre an getrennten Aufnahmen mit zusätzlichen vermessenen Punkten zu untersuchen.
+
+\subsection{Zwei Personen und kurze Verdeckungen}
+Beim Ballwerfen stehen an allen 31 Messzeitpunkten zwei Positionen zur Verfügung. Daraus ergeben sich 62 Positionsdatensätze. Die gemeinsame Zeitdauer beider Spuren beträgt rund drei Sekunden. Für die erste Spur werden 1,005 Meter beobachteter Weg ausgewiesen, für die zweite 0,448 Meter. Zu diesen kurzen Bewegungen wurde kein unabhängiger Weg vermessen. Der Versuch belegt, dass zwei Personen zum selben Zeitpunkt getrennt gespeichert und ausgewertet werden können. Er erlaubt keine Aussage, dass die beiden Strecken auf Zentimeter genau bestimmt wurden.
+
+Im Versuch mit mehreren Hindernissen vom 20. November stellt sich eine andere Frage. Die wichtigste Unterscheidung ist hier, welcher Anteil der Ausgabe aus sichtbaren Punkten stammt. Für Spur 2 sind 3,221 Meter als beobachtet und weitere 3,406 Meter als geradlinig geschätzt ausgewiesen. Damit stammt mehr als die Hälfte der bilanzierten Strecke aus Verdeckungsabschnitten. Der Gesamtwert von 6,627 Metern hat eine andere Aussagekraft als eine lückenlos aus Bildern bestimmte Strecke. Weitere 0,835 Sekunden bleiben für diese Spur zeitlich unberücksichtigt.
+
+Siehe Tab.~\ref{tab:em-hind}.
+\begin{table}[htbp]\centering\caption{Wegbilanz je Auswertungsnummer (eigener Hindernisbericht, 20. November, 15:53 Uhr)}\label{tab:em-hind}
+\begin{tabular}{@{}lllll@{}}\toprule Spur & Beobachtet in m & Geschätzt in m & Bilanziert in m & Offene Zeit in s\\\midrule
+2 & 3,221 & 3,406 & 6,627 & 0,835\\
+3 & 0,000 & 0,000 & 0,000 & 0,000\\
+4 & 0,000 & 0,000 & 0,000 & 0,000\\
+5 & 0,000 & 0,000 & 0,000 & 0,000\\
+6 & 0,105 & 0,000 & 0,105 & 0,000\\\bottomrule\end{tabular}\end{table}
+Ein ausgewiesener Weg von null Metern bedeutet in dieser Tabelle, dass innerhalb der Spur keine Bewegung über die verwendete Schwelle gezählt wurde. Für eine fachliche Bewertung der Identität müssen die Kontrollbilder vor und nach der jeweiligen Begegnung verglichen werden. Eine kleine Zahl an Spuren reicht dafür nicht aus. Zwei Personen könnten auch bei gleichbleibender Anzahl die Nummern tauschen.
+
+\subsection{Grenzen der Ergebnisse und weitere Integration}
+Das Hindernisvideo wurde auch mit dem projektspezifischen Modell untersucht. Im gespeicherten Lauf vom 20. November um 13:15 Uhr wurden an 117 Zeitpunkten insgesamt 75 Personenpositionen ausgegeben. Die Kamerazuordnung wurde 107-mal akzeptiert. Diese Werte haben verschiedene Bezugsgrößen: Eine akzeptierte Kameraansicht kann mehrere, eine oder gar keine brauchbare Personenposition enthalten. Eine Division der beiden Zahlen ergäbe daher keine Erkennungsquote.
+
+Eine zusätzliche Einzelbildprüfung am Beginn des Kreisvideos macht den Unterschied sichtbar. Im Bild befinden sich zwei Personen. Bei Eingabegröße 640 und einer Erkennungsschwelle von 0,25 wurden zwei Hütchen als Spieler ausgegeben. Bei Größe 1280 blieb ein Hütchen mit einem Wert von ungefähr 0,65 übrig. Beide Personen wurden in diesem Versuch übersehen. Eine Änderung des Feldprofils würde an den ausgegebenen Kästen für dieses Bild nichts ändern. Das Ergebnis gilt für diese Kameraansicht und diese Modelldatei. Für die im Erkennungsteil untersuchten anderen Daten lässt sich daraus keine allgemeine Bewertung ableiten.
+
+Vor einer Erweiterung auf zwei Kameras sind für den vorliegenden Aufbau vor allem zwei Fragen offen. Bei der geraden Strecke muss sich die Abweichung in weiteren Durchgängen mit denselben gemessenen Start- und Zielmarkierungen nachvollziehen lassen. Bei Verdeckungen ist bildweise zu prüfen, ob der Läufer wieder die richtige Spur erhält und ob der geschätzte Bodenpunkt noch zur Person gehört. Erst nach dem Zusammenführen der Spielererkennung und der geprüften Einzelkameraauswertung ist das Panorama als nächster Arbeitsschritt vorgesehen.
+
+\clearpage
 \section{Fazit und Ausblick}
 \abschnittsautor{\alleautoren}
 
